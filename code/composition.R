@@ -46,7 +46,7 @@ dir.create(table.out, recursive = T)
 
 # Read in files ####
 # Run "clean.R" prior to running this script
-perf.n <- readRDS(here('output', 'compile', 'perf.n.clean.rds'))
+perf.n <- readRDS(here('data', 'compile', 'perf.n.clean.rds'))
 
 counts <- perf.n$counts
 relative <- perf.n$relative
@@ -333,7 +333,7 @@ pd.group.all$Age <- NULL
 
 rbind(pd.tree.all, pd.age.all, pd.group.all) %>%
   gt(rowname_col = 'row') %>%
-  tab_header(title = 'Supplementary table 1. Results of PERMDISP2 tests of homogeneity of variance for tree, age and group variables.') %>%
+  tab_header(title = 'Table S1. Results of PERMDISP2 tests of homogeneity of variance for tree, age and group variables.') %>%
   tab_style(
     style = cell_text(style = 'italic'),
     locations = cells_body(
@@ -343,7 +343,7 @@ rbind(pd.tree.all, pd.age.all, pd.group.all) %>%
   fmt_missing(everything(), missing_text = '') %>%
   cols_align(align = 'center') %>%
   tab_source_note(source_note = 'P values are the results of permutation tests with pseudo F-ratios and 999 iterations each.') %>%
-  gtsave(here(table.out, 'supp.table.1.png'))
+  gtsave(here(table.out, 'table.s1.png'))
 
 # Vertical stratification within individual trees ####
 # All trees together, nesting crown variables in age
@@ -356,7 +356,7 @@ npa.age.crown.trees <- lapply(tree.log[2:9], permanova, form = 'dist ~ age/(heig
 npa.age.crown.trees$Age <- NULL
 npa.age.crown.trees %>%
   gt(rowname_col = 'row', groupname_col = 'Tree') %>%
-  tab_header(title = 'Supplementary table 2. PERMANOVA results (separated by tree) displaying the marginal compositional variation accounted for by crown variables.') %>%
+  tab_header(title = 'Table S2. PERMANOVA results (separated by tree) displaying the marginal compositional variation accounted for by crown variables.') %>%
   fmt_missing(everything(), missing_text = '') %>%
   cols_align(align = 'center') %>%
   opt_table_font(font = google_font('Crimson Text')) %>%
@@ -366,7 +366,7 @@ npa.age.crown.trees %>%
       columns = vars(Term),
       rows = grepl('^[[:lower:]]', Term))) %>%
   tab_source_note(source_note = 'P values are the results of permutation tests with pseudo F-ratios and 999 iterations each.') %>%
-  gtsave(here(table.out, 'supp.table.2.png'))
+  gtsave(here(table.out, 'table.s2.png'))
 
 # Height
 npa.age.ht.trees <- lapply(tree.log[2:9], permanova, form = 'dist ~ age/height',
@@ -374,7 +374,7 @@ npa.age.ht.trees <- lapply(tree.log[2:9], permanova, form = 'dist ~ age/height',
 npa.age.ht.trees$Age <- NULL
 npa.age.ht.trees %>%
   gt(groupname_col = 'Tree') %>%
-  tab_header(title = 'Supplementary table 3. PERMANOVA results (separated by tree) displaying the amount of compositional variation accounted for by height.') %>%
+  tab_header(title = 'Table S3. PERMANOVA results (separated by tree) displaying the amount of compositional variation accounted for by height.') %>%
   fmt_missing(everything(), missing_text = '') %>%
   cols_align(align = 'center') %>%
   opt_table_font(font = google_font('Crimson Text')) %>%
@@ -384,7 +384,7 @@ npa.age.ht.trees %>%
       columns = vars(Term),
       rows = grepl('^[[:lower:]]', Term))) %>%
   tab_source_note(source_note = 'P values are the results of permutation tests with pseudo F-ratios and 999 iterations each.') %>%
-  gtsave(here(table.out, 'supp.table.3.png'))
+  gtsave(here(table.out, 'table.s3.png'))
 
 # Closure
 npa.age.closure.trees <- lapply(tree.log[2:9], permanova, form = 'dist ~ age/closure',
@@ -392,7 +392,7 @@ npa.age.closure.trees <- lapply(tree.log[2:9], permanova, form = 'dist ~ age/clo
 npa.age.closure.trees$Age <- NULL
 npa.age.closure.trees %>%
   gt(groupname_col = 'Tree') %>%
-  tab_header(title = 'Supplementary table 4. PERMANOVA results (separated by tree) displaying the amount of compositional variation accounted for by crown closure.') %>%
+  tab_header(title = 'Table S4. PERMANOVA results (separated by tree) displaying the amount of compositional variation accounted for by crown closure.') %>%
   fmt_missing(everything(), missing_text = '') %>%
   cols_align(align = 'center') %>%
   opt_table_font(font = google_font('Crimson Text')) %>%
@@ -402,7 +402,7 @@ npa.age.closure.trees %>%
       columns = vars(Term),
       rows = grepl('^[[:lower:]]', Term))) %>%
   tab_source_note(source_note = 'P values are the results of permutation tests with pseudo F-ratios and 999 iterations each.') %>%
-  gtsave(here(table.out, 'supp.table.4.png'))
+  gtsave(here(table.out, 'table.s4.png'))
 
 # NMDS ordination of all needle ages ####
 all <- nmds.mc.par(phy.in = logged$all, n.cores = 6, trymax = 75, perm = 99)
