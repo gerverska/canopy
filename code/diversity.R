@@ -34,7 +34,7 @@ table.out <- here('output', 'tables')
 dir.create(table.out, recursive = T)
 
 # Read in files ####
-perf.n <- readRDS(here('output', 'compile', 'perf.n.clean.rds'))
+perf.n <- readRDS(here('data', 'compile', 'perf.n.clean.rds'))
 
 ages <- png::readPNG(here('data', 'media', 'shaw.age.class.png'), native = T)
 
