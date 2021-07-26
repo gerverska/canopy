@@ -119,7 +119,7 @@ macro.tax %<>% arrange(desc(`Maximum relative abundance`)) %>%
   arrange(Order, Family, Genus)
 macro.tax %>% 
 gt(groupname_col = c('Phylum')) %>%
-  tab_header(title = 'Supplementary table 5. Putatively endophytic macrofungal OTUs, applying the definition of Thiers and Halling 2018.') %>%
+  tab_header(title = 'Table S5. Putatively endophytic macrofungal OTUs, applying the definition of Thiers and Halling 2018.') %>%
   cols_align(align = 'center') %>%
   tab_style(
     style = cell_text(style = 'italic'),
@@ -128,7 +128,7 @@ gt(groupname_col = c('Phylum')) %>%
   fmt_missing(columns = everything(), missing_text = '') %>%
   tab_source_note(source_note = 'Sorted first by maximum relative abundance, by occurrence in samples, and then by order, family, and genus.') %>%
   opt_table_font(font = google_font('Crimson Text')) %>%
-  gtsave(filename = here(table.out, 'supp.table.5.png'))
+  gtsave(filename = here(table.out, 'table.s5.png'))
 
 # Species accumulation curve ####
 otu.tab <- perf.n$counts$all@otu_table %>% data.frame()
