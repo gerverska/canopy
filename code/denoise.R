@@ -27,9 +27,9 @@ filt.rev <- path.rev %>% gsub(in.path, filt.path, .)
 # Preview read quality before trimming ####
 qual.samps <- sample(1:length(path.fwd), 12)
 qual.fwd <- plotQualityProfile(path.fwd[qual.samps]) + ggtitle('Quality profiles fwd')
-here(out.path, 'qual.fwd.pdf') %>% ggsave(width=12, height=9)
+here(out.path, 'qual.fwd.pdf') %>% ggsave(width = 12, height = 9)
 qual.rev <- plotQualityProfile(path.rev[qual.samps]) + ggtitle('Quality profiles rev')
-here(out.path, 'qual.rev.pdf') %>% ggsave(width=12, height=9)
+here(out.path, 'qual.rev.pdf') %>% ggsave(width = 12, height = 9)
   
 # Trim and quality filter ####
 trim <- filterAndTrim(path.fwd, filt.fwd,
