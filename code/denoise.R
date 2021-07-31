@@ -34,8 +34,8 @@ here(out.path, 'qual.rev.pdf') %>% ggsave(width=12, height=9)
 # Trim and quality filter ####
 trim <- filterAndTrim(path.fwd, filt.fwd,
                       path.rev, filt.rev,
-                      maxEE=c(2,2),
-                      multithread=TRUE)
+                      maxEE = c(2,2),
+                      multithread = TRUE)
   
 # Update list of trimmed file paths to exclude samples with no reads passing filters ####
 filt.fwd <- list.files(filt.path, pattern = 'R1.fq.gz', full.names = T)
