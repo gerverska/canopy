@@ -1,26 +1,34 @@
-# Creates Tables 2-4, which: ####
-# show the results of PERMANOVAs testing whether compositions differ among
+# Creates Tables 1, which: ####
+# shows the results of PERMANOVA testing whether compositions differ among
 # trees, needle age classes, exposure groups, and along crown variables more than expected by chance.
+# Non-age variables are nested in age, and crown variables underwent marginal (type II) testing.
 
-# Creates Figure 4, which: ####
+# Creates Figure 2, which: ####
 # shows the results of db-RDA where compositional variation is constrained onto 
 # height, depth, and crown closure, separated by needle age class.
 
-# Creates Figure 5, which: ####
+# Creates Figure 3, which: ####
 # shows the results of partial Mantel tests of uncorrelated community structures for pairs of
 # needle age class transitions, separated by exposure group.
 
-# Creates Figure 6, which: ####
+# Creates Figure 4, which: ####
 # shows the relative abundances of Nothophaeocryptopus gaeumannii (a) and Rhabdocline parkeri
 # (b) across age classes and split by exposure group.
 
-# Creates Supplementary Table 1, which: ####
+# Creates Table S2, which: ####
 # shows the results of PERMDISP2 tests of homogeneity of variance among trees, needle age classes, and exposure groups.
 
-# Creates Supplementary Tables 2-4, which: ####
-# show the results of PERMANOVAs testing whether compositions within individual trees vary along height and/or closure gradients.
+# Creates Tables S3-S5, which: ####
+# show the results of PERMANOVAs testing whether compositions within individual trees vary along height
+# and/or closure gradients. This involves a marginal test (S3), and tests only examining variation along
+# height (S4) or closure (S5).
 
-# Creates Supplementary Figure 2, which: #####
+# Creates Tables S6-S7, which: ####
+# subsets the dataset by needle age class and shows the results of PERMANOVAs testing whether
+# compositions differ along crown variables (S6, marginal/type II testing) or between exposure groups (S7)
+# more than expected by chance.
+
+# Creates Figure S7, which: #####
 # shows unconstrained NMDS ordinations for all retained samples, with points colored by
 # (a) tree of origin and
 # (b) needle age class.
@@ -53,9 +61,6 @@ relative <- perf.n$relative
 logged <- perf.n$logged
 tree.log <- perf.n$tree.log
 
-# Test of equal variance among exposure groups - altogether and for each age class ####
-pd.group.ages <- lapply(logged[2:5], permdisp, test = 'group', n.perm = 999, bias = T) %>% bind_rows()
-
 # Test of no compositional differences among trees, nested within needle age class ####
 npa.age.tree.terms.all <- permanova(logged$all, form = 'dist ~ age/tree', by = 'terms', n.perm = 999)
 npa.age.tree.terms.all$row.group <- 'Age class and tree'
@@ -77,7 +82,7 @@ npa.group.all$Age <- NULL
 # Combine all 'all' PERMANOVAs
 rbind(npa.age.tree.terms.all, npa.age.crown.margin.all, npa.group.all) %>%
   gt(groupname_col = 'row.group') %>%
-  tab_header(title = 'Table 2. PERMANOVA results displaying the amount of compositional variation accounted for by age class; tree; the marginal variation of height, depth, and crown closure; and exposure group.') %>%
+  tab_header(title = 'Table 1. PERMANOVA results displaying the amount of compositional variation accounted for by age class; tree; the marginal variation of height, depth, and crown closure; and exposure group.') %>%
   cols_label(R2 = html('R<sup>2</sup>')) %>%
   tab_style(
     style = cell_text(style = 'italic'),
@@ -88,66 +93,7 @@ rbind(npa.age.tree.terms.all, npa.age.crown.margin.all, npa.group.all) %>%
   tab_source_note(source_note = 'P values are the results of permutation tests with
                   pseudo F-ratios and 999 iterations each.') %>%
   opt_table_font(font = google_font('Crimson Text')) %>%
-  cols_align(align = 'center') %>% gtsave(here(table.out, 'table.2.png'))
-
-# Marginal tests of no compositional difference along crown variables, applied to each age class separately ####
-npa.crown.margin.ages <- lapply(logged[2:5], permanova, form = 'dist ~ height + depth + closure', by = 'margin', n.perm = 999) %>%
-  bind_rows()
-npa.crown.margin.ages$Tree <- NULL
-
-npa.crown.margin.ages %>%
-  gt(groupname_col = c('Age')) %>%
-  tab_header(title = 'Table 3. PERMANOVA results (separated by age class) displaying the amount of marginal compositional variation accounted for by crown variables.') %>%
-  cols_label(R2 = html('R<sup>2</sup>')) %>%
-  tab_style(
-    style = cell_text(style = 'italic'),
-    locations = cells_body(
-      columns = vars(Term),
-      rows = grepl('^[[:lower:]]', Term))) %>%
-  fmt_missing(everything(), missing_text = '') %>%
-  tab_source_note(source_note = 'P values are the results of permutation tests with
-                  pseudo F-ratios and 999 iterations.') %>%
-  opt_table_font(font = google_font('Crimson Text')) %>%
-  cols_align(align = 'center') %>% gtsave(here(table.out, 'table.3.png'))
-
-# Tests of no compositional differences between exposure groups, applied to each age class separately ####
-npa.group.ages <- lapply(logged[2:5], permanova, form = 'dist ~ group', by = 'terms', n.perm = 999) %>% bind_rows()
-npa.group.ages$Tree <- NULL
-
-npa.group.ages %>%
-  gt(groupname_col = c('Age')) %>%
-  tab_header(title = 'Table 4. PERMANOVA results (separated by age class) displaying the amount of compositional variation accounted for by exposure group.') %>%
-  cols_label(R2 = html('R<sup>2</sup>')) %>%
-  tab_style(
-    style = cell_text(style = 'italic'),
-    locations = cells_body(
-      columns = vars(Term),
-      rows = grepl('^[[:lower:]]', Term))) %>%
-  fmt_missing(everything(), missing_text = '') %>%
-  tab_source_note(source_note = 'P values are the results of permutation tests with pseudo F-ratios and 999 iterations.') %>%
-  opt_table_font(font = google_font('Crimson Text')) %>%
-  cols_align(align = 'center') %>% gtsave(here(table.out, 'table.4.png'))
-
-# Indicator species analysis ####
-isa.group.all <- indicate(counts$all, test = 'group')
-isa.group.all %<>% arrange(desc(Group), desc(IV))
-isa.group.all$IV %<>% round(digits = 3)
-isa.group.all$P %<>% round(digits = 3)
-isa.group.all$Taxon %<>% str_replace('Nothophaeocryptopus', 'N.')
-isa.group.all$Age <- NULL
-isa.group.all %>%
-  gt() %>%
-  tab_header(title = 'Table 5. Results of indicator species analysis for open and closed exposure groups.') %>%
-  cols_align(align = 'center') %>%
-  opt_table_font(font = google_font('Crimson Text')) %>%
-  tab_style(
-    style = cell_text(style = 'italic'),
-    locations = cells_body(
-      columns = vars(Taxon),
-      rows = !grepl('sp\\.', Taxon))) %>%
-  tab_source_note(source_note = 'P values were obtained after 999 permutations and corrected
-                    for the false discovery rate using the Benjamini-Hochberg method.') %>%
-  gtsave(here(table.out, 'table.5.png'))
+  cols_align(align = 'center') %>% gtsave(here(table.out, 'table.1.png'))
 
 # dbRDA constrained on crown variables, applied to each age class separately ####
 db.cols <- c('#d5a6bd', '#674ea7', '#1155cc', '#000000', '#666666')
@@ -211,7 +157,7 @@ ages.db <- (a1.db | a2.db) / (a3.db | a4.db) + plot_annotation(tag_levels = list
                                                          '(d)\n\nA4'))) +
   plot_layout(guides = 'collect') &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
-ggsave(here(figure.out, 'fig.4.tiff'), ages.db, units = 'in', width = 8.75, height = 5.25,
+ggsave(here(figure.out, 'fig.2.tiff'), ages.db, units = 'in', width = 8.75, height = 5.25,
        dpi = 600, compression = 'lzw')
 
 # Mantel tests between ages ####
@@ -261,7 +207,7 @@ time.plot <- ggplot(time, aes(x = Transition, y = mean)) +
         legend.title = element_text(size = 7, face = 'bold'),
         legend.text = element_text(size = 7))
 time.plot
-ggsave(here(figure.out, 'fig.5.tiff'), time.plot, units = 'in', width = 3.5, height = 2,
+ggsave(here(figure.out, 'fig.3.tiff'), time.plot, units = 'in', width = 3.5, height = 2,
        dpi = 600, compression = 'lzw')
 
 # Comparing the relative abundance of NOGA between exposure groups at each age ####
@@ -318,7 +264,7 @@ rp.ra.plot <- ggplot(rp.sam.data, aes(x = group, y = rp.ra, fill = tree)) +
         legend.text = element_text(size = 7))
 ng.ra.plot / rp.ra.plot + plot_layout(guides = 'collect') + plot_annotation(tag_levels = list(c('(a)', '(b)'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
-ggsave(here(figure.out, 'fig.6.tiff'), units = 'in', width = 5, height = 3.5,
+ggsave(here(figure.out, 'fig.4.tiff'), units = 'in', width = 5, height = 3.5,
        dpi = 600, compression = 'lzw')
 
 # Tests of equal variance among trees, age classes, exposure groups ####
@@ -333,7 +279,7 @@ pd.group.all$Age <- NULL
 
 rbind(pd.tree.all, pd.age.all, pd.group.all) %>%
   gt(rowname_col = 'row') %>%
-  tab_header(title = 'Table S1. Results of PERMDISP2 tests of homogeneity of variance for tree, age and group variables.') %>%
+  tab_header(title = 'Table S2. Results of PERMDISP2 tests of homogeneity of variance for tree, age and group variables.') %>%
   tab_style(
     style = cell_text(style = 'italic'),
     locations = cells_body(
@@ -343,7 +289,7 @@ rbind(pd.tree.all, pd.age.all, pd.group.all) %>%
   fmt_missing(everything(), missing_text = '') %>%
   cols_align(align = 'center') %>%
   tab_source_note(source_note = 'P values are the results of permutation tests with pseudo F-ratios and 999 iterations each.') %>%
-  gtsave(here(table.out, 'table.s1.png'))
+  gtsave(here(table.out, 'table.s2.png'))
 
 # Vertical stratification within individual trees ####
 # All trees together, nesting crown variables in age
@@ -356,25 +302,7 @@ npa.age.crown.trees <- lapply(tree.log[2:9], permanova, form = 'dist ~ age/(heig
 npa.age.crown.trees$Age <- NULL
 npa.age.crown.trees %>%
   gt(rowname_col = 'row', groupname_col = 'Tree') %>%
-  tab_header(title = 'Table S2. PERMANOVA results (separated by tree) displaying the marginal compositional variation accounted for by crown variables.') %>%
-  fmt_missing(everything(), missing_text = '') %>%
-  cols_align(align = 'center') %>%
-  opt_table_font(font = google_font('Crimson Text')) %>%
-  tab_style(
-    style = cell_text(style = 'italic'),
-    locations = cells_body(
-      columns = vars(Term),
-      rows = grepl('^[[:lower:]]', Term))) %>%
-  tab_source_note(source_note = 'P values are the results of permutation tests with pseudo F-ratios and 999 iterations each.') %>%
-  gtsave(here(table.out, 'table.s2.png'))
-
-# Height
-npa.age.ht.trees <- lapply(tree.log[2:9], permanova, form = 'dist ~ age/height',
-                           by = 'terms', n.perm = 999) %>% bind_rows()
-npa.age.ht.trees$Age <- NULL
-npa.age.ht.trees %>%
-  gt(groupname_col = 'Tree') %>%
-  tab_header(title = 'Table S3. PERMANOVA results (separated by tree) displaying the amount of compositional variation accounted for by height.') %>%
+  tab_header(title = 'Table S3. PERMANOVA results (separated by tree) displaying the marginal compositional variation accounted for by crown variables.') %>%
   fmt_missing(everything(), missing_text = '') %>%
   cols_align(align = 'center') %>%
   opt_table_font(font = google_font('Crimson Text')) %>%
@@ -386,13 +314,13 @@ npa.age.ht.trees %>%
   tab_source_note(source_note = 'P values are the results of permutation tests with pseudo F-ratios and 999 iterations each.') %>%
   gtsave(here(table.out, 'table.s3.png'))
 
-# Closure
-npa.age.closure.trees <- lapply(tree.log[2:9], permanova, form = 'dist ~ age/closure',
-                                by = 'terms', n.perm = 999) %>% bind_rows()
-npa.age.closure.trees$Age <- NULL
-npa.age.closure.trees %>%
+# Height
+npa.age.ht.trees <- lapply(tree.log[2:9], permanova, form = 'dist ~ age/height',
+                           by = 'terms', n.perm = 999) %>% bind_rows()
+npa.age.ht.trees$Age <- NULL
+npa.age.ht.trees %>%
   gt(groupname_col = 'Tree') %>%
-  tab_header(title = 'Table S4. PERMANOVA results (separated by tree) displaying the amount of compositional variation accounted for by crown closure.') %>%
+  tab_header(title = 'Table S4. PERMANOVA results (separated by tree) displaying the amount of compositional variation accounted for by height.') %>%
   fmt_missing(everything(), missing_text = '') %>%
   cols_align(align = 'center') %>%
   opt_table_font(font = google_font('Crimson Text')) %>%
@@ -403,6 +331,83 @@ npa.age.closure.trees %>%
       rows = grepl('^[[:lower:]]', Term))) %>%
   tab_source_note(source_note = 'P values are the results of permutation tests with pseudo F-ratios and 999 iterations each.') %>%
   gtsave(here(table.out, 'table.s4.png'))
+
+# Closure
+npa.age.closure.trees <- lapply(tree.log[2:9], permanova, form = 'dist ~ age/closure',
+                                by = 'terms', n.perm = 999) %>% bind_rows()
+npa.age.closure.trees$Age <- NULL
+npa.age.closure.trees %>%
+  gt(groupname_col = 'Tree') %>%
+  tab_header(title = 'Table S5. PERMANOVA results (separated by tree) displaying the amount of compositional variation accounted for by crown closure.') %>%
+  fmt_missing(everything(), missing_text = '') %>%
+  cols_align(align = 'center') %>%
+  opt_table_font(font = google_font('Crimson Text')) %>%
+  tab_style(
+    style = cell_text(style = 'italic'),
+    locations = cells_body(
+      columns = vars(Term),
+      rows = grepl('^[[:lower:]]', Term))) %>%
+  tab_source_note(source_note = 'P values are the results of permutation tests with pseudo F-ratios and 999 iterations each.') %>%
+  gtsave(here(table.out, 'table.s5.png'))
+
+# Marginal tests of no compositional difference along crown variables, applied to each age class separately ####
+npa.crown.margin.ages <- lapply(logged[2:5], permanova, form = 'dist ~ height + depth + closure', by = 'margin', n.perm = 999) %>%
+  bind_rows()
+npa.crown.margin.ages$Tree <- NULL
+
+npa.crown.margin.ages %>%
+  gt(groupname_col = c('Age')) %>%
+  tab_header(title = 'Table S6. PERMANOVA results (separated by age class) displaying the amount of marginal compositional variation accounted for by crown variables.') %>%
+  cols_label(R2 = html('R<sup>2</sup>')) %>%
+  tab_style(
+    style = cell_text(style = 'italic'),
+    locations = cells_body(
+      columns = vars(Term),
+      rows = grepl('^[[:lower:]]', Term))) %>%
+  fmt_missing(everything(), missing_text = '') %>%
+  tab_source_note(source_note = 'P values are the results of permutation tests with
+                  pseudo F-ratios and 999 iterations.') %>%
+  opt_table_font(font = google_font('Crimson Text')) %>%
+  cols_align(align = 'center') %>% gtsave(here(table.out, 'table.s6.png'))
+
+# Tests of no compositional differences between exposure groups, applied to each age class separately ####
+npa.group.ages <- lapply(logged[2:5], permanova, form = 'dist ~ group', by = 'terms', n.perm = 999) %>% bind_rows()
+npa.group.ages$Tree <- NULL
+
+npa.group.ages %>%
+  gt(groupname_col = c('Age')) %>%
+  tab_header(title = 'Table S7. PERMANOVA results (separated by age class) displaying the amount of compositional variation accounted for by exposure group.') %>%
+  cols_label(R2 = html('R<sup>2</sup>')) %>%
+  tab_style(
+    style = cell_text(style = 'italic'),
+    locations = cells_body(
+      columns = vars(Term),
+      rows = grepl('^[[:lower:]]', Term))) %>%
+  fmt_missing(everything(), missing_text = '') %>%
+  tab_source_note(source_note = 'P values are the results of permutation tests with pseudo F-ratios and 999 iterations.') %>%
+  opt_table_font(font = google_font('Crimson Text')) %>%
+  cols_align(align = 'center') %>% gtsave(here(table.out, 'table.s7.png'))
+
+# Indicator species analysis ####
+isa.group.all <- indicate(counts$all, test = 'group')
+isa.group.all %<>% arrange(desc(Group), desc(IV))
+isa.group.all$IV %<>% round(digits = 3)
+isa.group.all$P %<>% round(digits = 3)
+isa.group.all$Taxon %<>% str_replace('Nothophaeocryptopus', 'N.')
+isa.group.all$Age <- NULL
+isa.group.all %>%
+  gt() %>%
+  tab_header(title = 'Table S8. Results of indicator species analysis for open and closed exposure groups.') %>%
+  cols_align(align = 'center') %>%
+  opt_table_font(font = google_font('Crimson Text')) %>%
+  tab_style(
+    style = cell_text(style = 'italic'),
+    locations = cells_body(
+      columns = vars(Taxon),
+      rows = !grepl('sp\\.', Taxon))) %>%
+  tab_source_note(source_note = 'P values were obtained after 999 permutations and corrected
+                    for the false discovery rate using the Benjamini-Hochberg method.') %>%
+  gtsave(here(table.out, 'table.s8.png'))
 
 # NMDS ordination of all needle ages ####
 all <- nmds.mc.par(phy.in = logged$all, n.cores = 6, trymax = 75, perm = 99)
@@ -417,7 +422,7 @@ all.age <- nmds.plot(all, note = T, 'NMDS1', 'NMDS2') +
   labs(fill = 'Age') + ylab('') + coord_fixed()
 
 all.nmds <- all.tree / all.age + plot_annotation(tag_levels = list(c('(a)', '(b)')))
-ggsave(here(figure.out, 'supp.fig.4.tiff'), all.nmds, units = 'in', width = 6, height = 8,
+ggsave(here(figure.out, 'fig.s7.tiff'), all.nmds, units = 'in', width = 6, height = 8,
        dpi = 600, compression = 'lzw')
 
 # Get session info ####

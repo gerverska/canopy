@@ -1038,7 +1038,7 @@ boot.it.mantel <- function(age.1, age.2, group, dist = 'bray', method = 'spearma
   old <- sam.data.2$age %>% unique()
   ages <- paste0(young, ' to ', old)
   
-  clust <- makeCluster(cores)
+  clust <- makeCluster(cores, setup_strategy = 'sequential')
   clusterEvalQ(clust, library(MASS))
   clusterEvalQ(clust, library(tidyverse))
   clusterEvalQ(clust, library(magrittr))

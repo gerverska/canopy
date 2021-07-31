@@ -1,4 +1,4 @@
-# Create Figure 1 from the manuscript, which:
+# Create Figure S1 from the manuscript, which:
 # (a) shows a map of HJA showing the approximate location of each tree,
 # (b) the relationship between crown closure and height in crown for climbed and un-climbed trees,
 # (c) how each crown variable is calculated.
@@ -112,7 +112,8 @@ hja.map <- ggplot(mapping = aes(x = x, y = y)) +
         legend.position = 'right',
         legend.direction = 'vertical',
         legend.title = element_text(face = 'bold', size = 7),
-        legend.text = element_text(size = 7))
+        legend.text = element_text(size = 7),
+        panel.border = element_rect(color = 'black'))
 
 # PNW (sensu lato) shapefile map ####
 us <- read_sf(here('data', 'shapefiles', 'cb_2018_us_state_5m', 'cb_2018_us_state_5m.shp'))
@@ -129,7 +130,7 @@ pnw %<>% st_transform(26910)
 
 pnw.map <- ggplot(data = pnw) +
   geom_sf(color = 'black', fill = 'white', size = 0.1) +
-  geom_point(x = hja.point[1], y = hja.point[2], color = 'red', size = 0.75,
+  geom_point(x = hja.point[1], y = hja.point[2], color = 'red', size = 0.5,
              shape = 3, stroke = 0.25) +
   theme_map()
 
@@ -139,7 +140,7 @@ tree.map <-  map.plot / tree.plot / crown.vars +
   plot_annotation(tag_levels = list(c('(a)', '', '(b)', '(c)'))) & 
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 
-ggsave(here(figure.out, 'fig.1.tiff'), tree.map, units = 'in', width = 6, height = 8,
+ggsave(here(figure.out, 'fig.s1.tiff'), tree.map, units = 'in', width = 6, height = 8,
        dpi = 600, compression = 'lzw')
 
 # Get session info ####

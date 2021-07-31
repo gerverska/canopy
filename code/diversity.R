@@ -1,15 +1,15 @@
-# Creates Table 1, which: ####
+# Creates Table S1, which: ####
 # reports the results of ANOVAs tests for whether diversity differs among tree, needle age class, and exposure group,
 # differ more than expected by chance.
 
-# Creates Figure 3, which: ####
+# Creates Figure 1, which: ####
 # (a) shows how OTU richness varies among needle age classes,
 # (b) how the Shannon diversity index differs among exposure groups, and
 # (c) how the Shannon diversity index differs among trees.
 
-# Creates Supplementary figure 5, which: ####
+# Creates Figure S6, which: ####
 # (a) models the relationship between estimated richness and closure
-# (b) models the relationship between the estimated Shannon index and depth
+# (b) models the relationship between the estimated Shannon index and closure
 
 # Load packages ####
 library(patchwork)
@@ -61,7 +61,7 @@ perf.n.aov.group.age <- perf.n.div %>%
 
 rbind(perf.n.aov.tree.age, perf.n.aov.group.age) %>%
   gt(groupname_col = c('metric')) %>%
-  tab_header(title = 'Table 1. ANOVA results testing variation in alpha diversity in and among trees, exposure groups, and needle ages.') %>%
+  tab_header(title = 'Table S1. ANOVA results testing variation in alpha diversity in and among trees, exposure groups, and needle ages.') %>%
   cols_align(align = 'center') %>%
   tab_style(
     style = cell_text(style = 'italic'),
@@ -71,7 +71,7 @@ rbind(perf.n.aov.tree.age, perf.n.aov.group.age) %>%
   fmt_missing(columns = everything(), missing_text = '') %>%
   tab_source_note(source_note = 'Estimates of OTU richness and the Shannon index of diversity were interpolated or extrapolated to a depth of 1000 reads.') %>%
   opt_table_font(font = google_font('Crimson Text')) %>%
-  gtsave(filename = here(table.out, 'table.1.png'))
+  gtsave(filename = here(table.out, 'table.s1.png'))
 
 # Tukey ####
 # Age ####
@@ -262,7 +262,7 @@ group.q1.pair <- ggplot(filter(perf.n.div, metric == 'q1')) +
 (age.q0.pair + ages) / (group.q1.pair + tree.q1.pair)  +
   plot_annotation(tag_levels = list(c('(a)', '', '(b)', '(c)'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
-ggsave(here(figure.out, 'fig.3.tiff'), units = 'in', height = 5.75, width = 8.75,
+ggsave(here(figure.out, 'fig.1.tiff'), units = 'in', height = 5.75, width = 8.75,
        dpi = 600, compression = 'lzw')
 
 # Richness vs closure plot ####
@@ -288,7 +288,7 @@ rich.closure.lme.plot <- ggplot(rich, aes(x = closure, y = estimate)) +
         axis.text.y = element_text(size = 6))
 rich.closure.lme.plot
 
-# Diversity vs depth plot ####
+# Diversity vs closure plot ####
 shannon$lme.fixed <- shannon.lme.red$fitted %>% data.frame() %>% .$fixed
 shannon.lab <- substitute(P~p*','~R^2~"="~r2, list(p = shannon.lme.p, r2 = shannon.lme.r2)) %>% as.expression()
 
@@ -312,7 +312,7 @@ shannon.closure.lme.plot
 rich.closure.lme.plot / shannon.closure.lme.plot +
   plot_annotation(tag_levels = list(c('(a)', '(b)'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
-ggsave(here(figure.out, 'supp.fig.5.tiff'), units = 'in', height = 8, width = 6,
+ggsave(here(figure.out, 'fig.s6.tiff'), units = 'in', height = 8, width = 6,
        dpi = 600, compression = 'lzw')
 
 # Get session info ####

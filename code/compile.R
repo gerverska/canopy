@@ -1,6 +1,6 @@
 # Make phyloseq objects that only include fungal ITS2 sequences ####
 # ITS2 sequences were extracted using ITSx version 1.1b1
-# Sequence alignments were carried out using vsearch v2.8.5_linux_x86_64 (https://github.com/torognes/vsearch)
+# Sequence alignments were carried out using VSEARCH v2.8.5_linux_x86_64 (https://github.com/torognes/vsearch)
 
 # Load packages
 library(ggthemes)

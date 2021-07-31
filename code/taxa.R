@@ -1,10 +1,10 @@
-# Create Figure 2 from the manuscript, which shows:
+# Create Figure S4 from the manuscript, which shows:
+# a species accumulation curve for each tree
+
+# Create Figure S5 from the manuscript, which shows:
 # (a) a stacked bar plot, with each tree getting its own bar,
 # (b) the species abundance distribution of OTUs across all eight trees, and
 # (c) the occupancy-abundance relationship for each OTU across all trees.
-
-# Create Supplementary Figure 3 from the manuscript, which shows:
-# a species accumulation curve for each tree
 
 library(scales)
 library(cowplot)
@@ -89,7 +89,7 @@ stack.plot <- ggplot(stack, aes(x = Sample, y = Abundance, fill = combo)) +
 stack.plot / (sad.tree / occ.abund.tree) +
   plot_annotation(tag_levels = list(c('(a)', '(b)', '(c)'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
-ggsave(here(figure.out, 'fig.2.tiff'), units = 'in', width = 6, height = 8,
+ggsave(here(figure.out, 'fig.s5.tiff'), units = 'in', width = 6, height = 8,
        dpi = 600, compression = 'lzw')
 
 # Macrofungal survey ####
@@ -114,12 +114,12 @@ macro.tax$`Number of samples` <- macro.samples
 macro.tax$Kingdom <- NULL
 macro.tax$Genus_species <- NULL
 macro.tax$Family %<>% str_replace('Hymenochaetales_fam_Incertae_sedis', 'Incertae sedis')
-macro.tax %<>% arrange(desc(`Maximum relative abundance`)) %>% 
-  arrange(desc(`Number of samples`)) %>% 
+macro.tax %<>% arrange(desc(`Maximum relative abundance`)) %>%
+  arrange(desc(`Number of samples`)) %>%
   arrange(Order, Family, Genus)
-macro.tax %>% 
+macro.tax %>%
 gt(groupname_col = c('Phylum')) %>%
-  tab_header(title = 'Table S5. Putatively endophytic macrofungal OTUs, applying the definition of Thiers and Halling 2018.') %>%
+  tab_header(title = 'Putatively endophytic macrofungal OTUs, applying the definition of Thiers and Halling 2018.') %>%
   cols_align(align = 'center') %>%
   tab_style(
     style = cell_text(style = 'italic'),
@@ -128,7 +128,7 @@ gt(groupname_col = c('Phylum')) %>%
   fmt_missing(columns = everything(), missing_text = '') %>%
   tab_source_note(source_note = 'Sorted first by maximum relative abundance, by occurrence in samples, and then by order, family, and genus.') %>%
   opt_table_font(font = google_font('Crimson Text')) %>%
-  gtsave(filename = here(table.out, 'table.s5.png'))
+  gtsave(filename = here(table.out, 'macrofungi.png'))
 
 # Species accumulation curve ####
 otu.tab <- perf.n$counts$all@otu_table %>% data.frame()
@@ -154,7 +154,7 @@ ggplot(spec.accum, aes(x = Sites, y = Richness, ymax = UPR, ymin = LWR, color = 
         legend.title = element_text(size = 7, face = 'bold'),
         legend.key.size = unit(0.5, units = 'lines'),
         legend.text = element_markdown(size = 7))
-ggsave(here(figure.out, 'supp.fig.3.tiff'), units = 'in', width = 4, height = 3,
+ggsave(here(figure.out, 'fig.s4.tiff'), units = 'in', width = 4, height = 3,
        dpi = 600, compression = 'lzw')
 
 # Get session info ####

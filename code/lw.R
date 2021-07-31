@@ -1,4 +1,4 @@
-# Create Supplementary Figure 2 from the manuscript, which shows:
+# Create Figure S3 from the manuscript, which shows:
 # (a) mean leaf wetness vs height,
 # (b) seasonality of leaf wetness vs height,
 # (c) mean daily leaf wetness range vs height
@@ -121,7 +121,7 @@ lw.plots <- (mean.plot | sd.plot) / (diff.plot | cont.plot) +
   plot_annotation(tag_levels = list(c('(a)', '(b)', '(c)', '(d)'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 lw.plots
-ggsave(here(figure.out, 'supp.fig.2.tiff'), units = 'in', height = 5.75, width = 8.75,
+ggsave(here(figure.out, 'fig.s3.tiff'), units = 'in', height = 5.75, width = 8.75,
        dpi = 600, compression = 'lzw')
 
 # Get session info ####

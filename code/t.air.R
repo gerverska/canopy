@@ -1,4 +1,4 @@
-# Create Supplementary Figure 1 from the manuscript, which shows:
+# Create Figure S2 from the manuscript, which shows:
 # (a) mean air temperature vs height,
 # (b) seasonality of air temperature vs height,
 # (c) mean daily air temperature range vs height
@@ -125,7 +125,7 @@ t.air.plots <- (mean.plot | sd.plot) / (diff.plot | cont.plot) +
   plot_annotation(tag_levels = list(c('(a)', '(b)', '(c)', '(d)'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 t.air.plots
-ggsave(here(figure.out, 'supp.fig.1.tiff'), units = 'in', height = 5.75, width = 8.75,
+ggsave(here(figure.out, 'fig.s2.tiff'), units = 'in', height = 5.75, width = 8.75,
        dpi = 600, compression = 'lzw')
 
 # Get session info ####
