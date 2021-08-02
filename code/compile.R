@@ -12,88 +12,11 @@ library(dada2)
 library(tidyverse)
 library(magrittr)
 library(here)
-
-# Functions ####
-# Remove otus with >1% of experimental reads found in the pcr and extraction controls
-remove.contam <- function(phy, controls, prop) {
-  
-  # Get the current named list of otu read totals
-  otu.tab <- phy@otu_table %>% data.frame()
-  otu.names <- colnames(otu.tab)
-  
-  # Identify otus found in the negative controls
-  contam.sums <- otu.tab[, colnames(otu.tab) %in% names(controls)] %>% colSums()
-  
-  # Calculate a ratio of the number of reads (in negative controls):(in non-control samples) for each otu
-  controls <- controls[names(controls) %in% names(contam.sums)]
-  
-  contam.prop <- controls / contam.sums
-  
-  # Get the names of the otus with ratio > prop and remove them from the input phyloseq object
-  contam.names <- contam.prop[contam.prop > prop] %>% names()
-  
-  keep <- otu.names[!(otu.names %in% contam.names)]
-  
-  phy %<>% prune_taxa(keep, .)
-  
-  keep <- sample_sums(phy) > 0
-  prune_samples(keep, phy)
-  
-}
-
-# Remove noise otus which contribute least to the total covariance of a dataset
-perfect.filt <- function(phy, k, file.prefix) {
-  
-  # For reproducible filtering
-  set.seed(666)
-  
-  otu.tab <- phy@otu_table %>% data.frame()
-  
-  # Even though we will ultimately use permutation filtering, the authors mention that performance is improved with Order = 'pvals'.
-  # This requires that we go ahead and obtain simulataneous PERFect output first. 
-  sim <- PERFect_sim(X = otu.tab)
-  # Of note here: by default, an alpha of 0.1 is used. Taxa with p-values greater than 0.1 are filtered out.
-  # For this reason, filtering is somewhat conservative, which would ideally allow us to retain real and somewhat rare taxa.
-  perm <- PERFect_perm(X = otu.tab, Order = 'pvals', pvals_sim = sim, algorithm = 'full', k = k)
-  tab.out <- perm$filtX
-  
-  # Save PERFect output
-  here(out.path, paste0(file.prefix, '.', 'perfect.perm.rds')) %>% saveRDS(perm, .)
-  
-  # Make p-value plots and save to output
-  perm %<>% pvals_Plots(otu.tab)
-  perm <- perm$plot + ggtitle(paste0('Permutation filtering', '-', file.prefix)) + scale_color_colorblind()
-  here(out.path, paste0(file.prefix, '.', 'perfect.perm.pvals.pdf')) %>% ggsave(., perm, dpi = 300)
-  
-  # Update the phyloseq object
-  keep <- tab.out %>% colnames()
-  phy %<>% prune_taxa(keep, .)
-  otu_table(phy) <- otu_table(tab.out, taxa_are_rows = F)
-  keep <- sample_sums(phy) > 0
-  prune_samples(keep, phy)
-  
-}
-
-# Convert ugly UNITE taxonomy to figure-ready taxonomy. Heads up--it's nasty!
-parse.tax <- function(phy) {
-  
-  phy@tax_table@.Data %<>% parse_taxonomy_greengenes()
-  
-  tax.tab <- phy@tax_table %>% data.frame()
-  tax.tab$Genus_species <- ifelse(!is.na(tax.tab$Species), paste0(tax.tab$Genus, ' ', tax.tab$Species),
-                                   ifelse(!is.na(tax.tab$Genus), paste0(tax.tab$Genus, ' sp.'),
-                                          ifelse(!is.na(tax.tab$Family), paste0(tax.tab$Family, ' sp.'),
-                                                 ifelse(!is.na(tax.tab$Order), paste0(tax.tab$Order, ' sp.'),
-                                              ifelse(!is.na(tax.tab$Class), paste0(tax.tab$Class, ' sp.'),
-ifelse(!is.na(tax.tab$Phylum), paste0(tax.tab$Phylum, ' sp.'),                                                                      ifelse(!is.na(tax.tab$Kingdom), paste0(tax.tab$Kingdom, ' sp.'), NA)))))))
-  phy@tax_table <- tax.tab %>% as.matrix() %>% tax_table()
-  
-  phy
-  
-}
+# Consult "code/functions.R" for descriptions of function application, inputs, and outputs
+source(here('code', 'functions.R'))
  
 # Load inputs ####
-meta <- readRDS(here('data', 'compile', 'full.hja.meta.rds'))
+meta <- readRDS(here('data', 'compile', 'canopy.meta.rds'))
 seq.tab <- readRDS(here('output', 'denoise', 'seq.tab.rds'))
 
 # Create output directories ####

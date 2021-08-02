@@ -254,7 +254,86 @@ loess.index <- function(all.crowns.df, span = 0.5, degree = 1, df.out = T){
 }
 
 # Phyloseq processing ####
-# See use in: "clean.R" and "composition.R"
+# See use in: "compile.R", clean.R" and "composition.R"
+remove.contam <- function(phy, controls, prop) {
+  # Remove otus with >1% of experimental reads found in the pcr and extraction controls
+  # This function takes a phyloseq object, a list of OTUs found in controls, and an acceptable proportion of reads
+  # for a given OTU (among all reads in the dataset) that can be found in the controls. OTUs exceeding this 
+  # proportion are removed from the input phyloseq, and this change is reflected in the output phyloseq object.
+  
+  # Get the current named list of otu read totals
+  otu.tab <- phy@otu_table %>% data.frame()
+  otu.names <- colnames(otu.tab)
+  
+  # Identify otus found in the negative controls
+  contam.sums <- otu.tab[, colnames(otu.tab) %in% names(controls)] %>% colSums()
+  
+  # Calculate a ratio of the number of reads (in negative controls):(in non-control samples) for each otu
+  controls <- controls[names(controls) %in% names(contam.sums)]
+  
+  contam.prop <- controls / contam.sums
+  
+  # Get the names of the otus with ratio > prop and remove them from the input phyloseq object
+  contam.names <- contam.prop[contam.prop > prop] %>% names()
+  
+  keep <- otu.names[!(otu.names %in% contam.names)]
+  
+  phy %<>% prune_taxa(keep, .)
+  
+  keep <- sample_sums(phy) > 0
+  prune_samples(keep, phy)
+  
+}
+perfect.filt <- function(phy, k, file.prefix) {
+  # Taking a phyloseq oject as input, this script removes OTUs which make non-significant contributions (alpha = 0.1) to the total
+  # covariance of the dataset, producing a filtered phyloseq object and a summary rds + figure as outputs.
+  
+  # For reproducible filtering
+  set.seed(666)
+  
+  otu.tab <- phy@otu_table %>% data.frame()
+  
+  # Even though we will ultimately use permutation filtering, the authors mention that performance is improved with Order = 'pvals'.
+  # This requires that we go ahead and obtain simulataneous PERFect output first. 
+  sim <- PERFect_sim(X = otu.tab)
+  # Of note here: by default, an alpha of 0.1 is used. Taxa with p-values greater than 0.1 are filtered out.
+  # For this reason, filtering is somewhat conservative, which would ideally allow us to retain real and somewhat rare taxa.
+  perm <- PERFect_perm(X = otu.tab, Order = 'pvals', pvals_sim = sim, algorithm = 'full', k = k)
+  tab.out <- perm$filtX
+  
+  # Save PERFect output
+  here(out.path, paste0(file.prefix, '.', 'perfect.perm.rds')) %>% saveRDS(perm, .)
+  
+  # Make p-value plots and save to output
+  perm %<>% pvals_Plots(otu.tab)
+  perm <- perm$plot + ggtitle(paste0('Permutation filtering', '-', file.prefix)) + scale_color_colorblind()
+  here(out.path, paste0(file.prefix, '.', 'perfect.perm.pvals.pdf')) %>% ggsave(., perm, dpi = 300)
+  
+  # Update the phyloseq object
+  keep <- tab.out %>% colnames()
+  phy %<>% prune_taxa(keep, .)
+  otu_table(phy) <- otu_table(tab.out, taxa_are_rows = F)
+  keep <- sample_sums(phy) > 0
+  prune_samples(keep, phy)
+  
+}
+parse.tax <- function(phy) {
+  # Taking a phyloseq object as input, this script coverts the UNITE taxonomy to something more readable.
+  
+  phy@tax_table@.Data %<>% parse_taxonomy_greengenes()
+  
+  tax.tab <- phy@tax_table %>% data.frame()
+  tax.tab$Genus_species <- ifelse(!is.na(tax.tab$Species), paste0(tax.tab$Genus, ' ', tax.tab$Species),
+                                  ifelse(!is.na(tax.tab$Genus), paste0(tax.tab$Genus, ' sp.'),
+                                         ifelse(!is.na(tax.tab$Family), paste0(tax.tab$Family, ' sp.'),
+                                                ifelse(!is.na(tax.tab$Order), paste0(tax.tab$Order, ' sp.'),
+                                                       ifelse(!is.na(tax.tab$Class), paste0(tax.tab$Class, ' sp.'),
+                                                              ifelse(!is.na(tax.tab$Phylum), paste0(tax.tab$Phylum, ' sp.'),                                                                      ifelse(!is.na(tax.tab$Kingdom), paste0(tax.tab$Kingdom, ' sp.'), NA)))))))
+  phy@tax_table <- tax.tab %>% as.matrix() %>% tax_table()
+  
+  phy
+  
+}
 filt.n.prune <- function(phy.in, prop = 0, depth = 0) {
   # This function accepts a phyloseq object as input, removes OTUs that are not
   # present in a specified proportion of samples (prop), and removes samples
@@ -503,6 +582,7 @@ rare.curve <- function(phy, step = 10){
 } # see if still relevant/needed
 
 # Diversity ####
+# As used in "diversity.R"
 inext.div <- function(in.phy, level = 1000, cores){
   # This function accepts a phyloseq object as input, estimates the diversity of each
   # sample for Hill numbers 0-2 at user-defined sampling depth (level), and returns
@@ -613,6 +693,7 @@ mean.boot <- function(x, y, var, n.perm = 999){
 }
 
 # Composition ####
+# As used in "composition.R"
 # Ordination
 nmds.mc.par <- function(phy.in, k = 2, distance = 'bray', trymax = 50, autotransform = FALSE, no.share = F,
                         trace = 1, zerodist = 'ignore', display = 'sites', test = T, perm = 999, col.hist = 'blue',
