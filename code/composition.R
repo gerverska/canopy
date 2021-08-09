@@ -28,6 +28,9 @@
 # compositions differ along crown variables (S6, marginal/type II testing) or between exposure groups (S7)
 # more than expected by chance.
 
+# Creates Tables S8, which: ####
+# identifies indicator taxa for open and closed exposure groups
+
 # Creates Figure S7, which: #####
 # shows unconstrained NMDS ordinations for all retained samples, with points colored by
 # (a) tree of origin and
@@ -415,11 +418,14 @@ all <- nmds.mc.par(phy.in = logged$all, n.cores = 6, trymax = 75, perm = 99)
 all.tree <- nmds.plot(all, note = F, 'NMDS1', 'NMDS2') +
   geom_point(shape = 21, size = 2, aes(fill = tree)) +
   scale_fill_colorblind() +
-  labs(fill = 'Tree') + coord_fixed()
+  labs(fill = 'Tree') +
+  xlab('') +
+  coord_fixed()
 all.age <- nmds.plot(all, note = T, 'NMDS1', 'NMDS2') +
   geom_point(shape = 21, size = 2, aes(fill = age)) +
   scale_fill_colorblind() +
-  labs(fill = 'Age') + ylab('') + coord_fixed()
+  labs(fill = 'Age') +
+  coord_fixed()
 
 all.nmds <- all.tree / all.age + plot_annotation(tag_levels = list(c('(a)', '(b)')))
 ggsave(here(figure.out, 'fig.s7.tiff'), all.nmds, units = 'in', width = 6, height = 8,

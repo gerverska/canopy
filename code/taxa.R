@@ -93,6 +93,8 @@ ggsave(here(figure.out, 'fig.s5.tiff'), units = 'in', width = 6, height = 8,
        dpi = 600, compression = 'lzw')
 
 # Macrofungal survey ####
+# The authors found this table intriguing but difficult to incorporate into the manuscript.
+# However, it will still be retained on the GitHub repository
 macro <- subset_taxa(perf.n$relative$all, Family == 'Cudoniaceae' |
                       Genus %in% c('Geopyxis', 'Tricharina', 'Wilcoxina', 'Pseudoplectania',
                                    'Nemania', 'Corticium', 'Ganoderma', 'Perenniporia', 'Trichaptum',
@@ -130,15 +132,15 @@ gt(groupname_col = c('Phylum')) %>%
   opt_table_font(font = google_font('Crimson Text')) %>%
   gtsave(filename = here(table.out, 'macrofungi.png'))
 
-# Species accumulation curve ####
+# OTU accumulation curve ####
 otu.tab <- perf.n$counts$all@otu_table %>% data.frame()
 sam.data <- perf.n$counts$all@sam_data %>% data.frame()
 
-spec.accum <- accumcomp(otu.tab, y = sam.data, factor = 'tree',
+otu.accum <- accumcomp(otu.tab, y = sam.data, factor = 'tree',
                         method = 'exact', conditioned = FALSE, plotit = FALSE) %>% 
   accumcomp.long(ci = NA)
 
-ggplot(spec.accum, aes(x = Sites, y = Richness, ymax = UPR, ymin = LWR, color = Grouping)) +
+ggplot(otu.accum, aes(x = Sites, y = Richness, ymax = UPR, ymin = LWR, color = Grouping)) +
   geom_line(size = 1, alpha = 0.75) +
   geom_ribbon(aes(fill = Grouping), size = 0.25, alpha = 0.15, show.legend = F) +
   scale_color_colorblind() +

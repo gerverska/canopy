@@ -34,10 +34,10 @@ study.crowns %<>% dplyr::select(-x, -y, -z)
 min.zmed <- study.crowns$zmed %>% min()
 rand.crowns %<>% dplyr::select(-exp.top, -top.diff) %>%
   dplyr::filter(zmed >= min.zmed)
-all.crowns <- rbind(study.crowns, rand.crowns)
-
-all.loess <- loess.index(all.crowns)
-study.loess <- all.loess[1:71, ]
+# all.crowns <- rbind(study.crowns, rand.crowns)
+# 
+# all.loess <- loess.index(all.crowns)
+# study.loess <- all.loess[1:71, ]
 
 tree.plot <- ggplot(mapping = aes(x = height, y = closure)) +
   geom_line(data = rand.crowns, aes(group = tree), color = 'gray80', alpha = 0.5, show.legend = F) +

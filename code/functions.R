@@ -19,8 +19,7 @@ random.plot <- function(min.x, max.x, min.y, max.y) {
   
   # I'm also not a fan of randomly sampling xy pairs @ 1 meter resolution, so this
   # will be updated in future applications. I'd rather the sample resolution match the
-  # resolution of the points, but it shouldn't affect anything. I could also see
-  # rounding off the coordinates to the near tens place, forcing trees to be at
+  # resolution of the points, but it shouldn't affect anything.
   
   # If you want a certain number of centers to be sampled, you should
   # change the hard-coded "8500" to something else.

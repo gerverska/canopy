@@ -4,7 +4,7 @@ output/compile/both*
 output/compile/twig*
 data/rasters/*e00
 data/media/supp.video.mp4
-data/media/supp.video.comp.mp4
+data/media/gervers.k.ecology.video.s1.mp4
 data/lidar/random/clips.50m/
 data/lidar/random/clips.10m/
 data/lidar/random/normalized/

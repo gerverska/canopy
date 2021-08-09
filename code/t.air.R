@@ -7,7 +7,6 @@
 library(patchwork)
 library(ggthemes)
 library(cowplot)
-library(foreach)
 library(tidyverse)
 library(magrittr)
 library(here)
