@@ -3,4 +3,4 @@
 Kyle A. Gervers, Daniel C. Thomas, Bitty A. Roy, Joseph W. Spatafora,
 Posy E. Busby
 
-For submission to *Ecology*
+For submission to *Fungal Ecology*
