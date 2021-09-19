@@ -1,8 +1,8 @@
-# Create Figure S1 from the manuscript, which shows:
-# (a) mean air temperature vs height,
-# (b) seasonality of air temperature vs height,
-# (c) mean daily air temperature range vs height
-# (d) air temperature continentality vs height
+# Create Fig. S1 from the manuscript, which shows:
+# (A) mean air temperature vs height,
+# (B) seasonality of air temperature vs height,
+# (C) mean daily air temperature range vs height
+# (D) air temperature continentality vs height
 
 library(patchwork)
 library(ggthemes)
@@ -125,7 +125,7 @@ t.air.plots <- (mean.plot | sd.plot) / (diff.plot | cont.plot) +
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 t.air.plots
 ggsave(here(figure.out, 'fig.s1.tiff'), units = 'mm', width = 190, height = 140,
-       dpi = 500, compression = 'lzw')
+       dpi = 300, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')

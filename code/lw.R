@@ -1,8 +1,8 @@
-# Create Figure S2 from the manuscript, which shows:
-# (a) mean leaf wetness vs height,
-# (b) seasonality of leaf wetness vs height,
-# (c) mean daily leaf wetness range vs height
-# (d) leaf wetness continentality vs height
+# Create Fig. S2 from the manuscript, which shows:
+# (A) mean leaf wetness vs height,
+# (B) seasonality of leaf wetness vs height,
+# (C) mean daily leaf wetness range vs height
+# (D) leaf wetness continentality vs height
 
 library(patchwork)
 library(ggthemes)
@@ -121,7 +121,7 @@ lw.plots <- (mean.plot | sd.plot) / (diff.plot | cont.plot) +
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 lw.plots
 ggsave(here(figure.out, 'fig.s2.tiff'), units = 'mm', height = 140, width = 190,
-       dpi = 500, compression = 'lzw')
+       dpi = 300, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')

@@ -1,19 +1,19 @@
-# Creates Tables 1, which: ####
+# Creates Table 1, which: ####
 # shows the results of PERMANOVA testing whether compositions differ among
 # trees, needle age classes, exposure groups, and along crown variables more than expected by chance.
 # Non-age variables are nested in age, and crown variables underwent marginal (type II) testing.
 
-# Creates Figure 4, which: ####
+# Creates Fig. 4, which: ####
 # shows the results of db-RDA where compositional variation is constrained onto 
 # height, depth, and crown closure, separated by needle age class.
 
-# Creates Figure 5, which: ####
+# Creates Fig. 5, which: ####
 # shows the results of partial Mantel tests of uncorrelated community structures for pairs of
 # needle age class transitions, separated by exposure group.
 
-# Creates Figure 6, which: ####
-# shows the relative abundances of Nothophaeocryptopus gaeumannii (a) and Rhabdocline parkeri
-# (b) across age classes and split by exposure group.
+# Creates Fig. 6, which: ####
+# shows the relative abundances of Nothophaeocryptopus gaeumannii (A) and Rhabdocline parkeri
+# (B) across age classes and split by exposure group.
 
 # Creates Table S2, which: ####
 # shows the results of PERMDISP2 tests of homogeneity of variance among trees, needle age classes, and exposure groups.
@@ -28,13 +28,13 @@
 # compositions differ along crown variables (S6, marginal/type II testing) or between exposure groups (S7)
 # more than expected by chance.
 
-# Creates Tables S8, which: ####
+# Creates Table S8, which: ####
 # identifies indicator taxa for open and closed exposure groups
 
-# Creates Figure S5, which: #####
+# Creates Fig. S5, which: #####
 # shows unconstrained NMDS ordinations for all retained samples, with points colored by
-# (a) tree of origin and
-# (b) needle age class.
+# (A) tree of origin and
+# (B) needle age class.
 
 library(patchwork)
 library(ggthemes)
@@ -161,7 +161,7 @@ ages.db <- (a1.db | a2.db) / (a3.db | a4.db) + plot_annotation(tag_levels = list
   plot_layout(guides = 'collect') &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 ggsave(here(figure.out, 'fig.4.tiff'), ages.db, units = 'mm', width = 190, height = 140,
-       dpi = 500, compression = 'lzw')
+       dpi = 300, compression = 'lzw')
 
 # Mantel tests between ages ####
 # Normal, unbootstrapped tests, accounting for xyz positions of each sampled height
@@ -211,7 +211,7 @@ time.plot <- ggplot(time, aes(x = Transition, y = mean)) +
         legend.text = element_text(size = 7))
 time.plot
 ggsave(here(figure.out, 'fig.5.tiff'), time.plot, units = 'mm', width = 90,
-       dpi = 500, compression = 'lzw')
+       dpi = 300, compression = 'lzw')
 
 # Comparing the relative abundance of NOGA between exposure groups at each age ####
 # Nothophaeocryptopus gaeumannii (OTU.1)
@@ -268,7 +268,7 @@ rp.ra.plot <- ggplot(rp.sam.data, aes(x = group, y = rp.ra, fill = tree)) +
 ng.ra.plot / rp.ra.plot + plot_layout(guides = 'collect') + plot_annotation(tag_levels = list(c('A', 'B'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 ggsave(here(figure.out, 'fig.6.tiff'), units = 'mm', width = 140,
-       dpi = 500, compression = 'lzw')
+       dpi = 300, compression = 'lzw')
 
 # Tests of equal variance among trees, age classes, exposure groups ####
 pd.tree.all <- permdisp(logged$all, test = 'tree', n.perm = 999, bias = T)
@@ -430,7 +430,7 @@ all.age <- nmds.plot(all, note = T, 'NMDS1', 'NMDS2') +
 all.nmds <- all.tree / all.age + plot_annotation(tag_levels = list(c('A', 'B'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 ggsave(here(figure.out, 'fig.s5.tiff'), all.nmds, units = 'mm', width = 140, height = 140,
-       dpi = 500, compression = 'lzw')
+       dpi = 300, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')

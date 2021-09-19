@@ -1,10 +1,10 @@
-# Create Figure S3 from the manuscript, which shows:
-# a species accumulation curve for each tree
+# Create Fig. S3 from the manuscript, which shows:
+# an OTU accumulation curve for each tree
 
 # Create Figure 2 from the manuscript, which shows:
-# (a) a stacked bar plot, with each tree getting its own bar,
-# (b) the species abundance distribution of OTUs across all eight trees, and
-# (c) the occupancy-abundance relationship for each OTU across all trees.
+# (A) a stacked bar plot, with each tree getting its own bar,
+# (B) the OTU abundance distribution of OTUs across all eight trees, and
+# (C) the occupancy-abundance relationship for each OTU across all trees.
 
 library(scales)
 library(cowplot)
@@ -29,7 +29,7 @@ dir.create(figure.out, recursive = T)
 table.out <- here('output', 'tables')
 dir.create(table.out, recursive = T)
 
-# Soecies abundance distribution and occupancy-abundance object creation ####
+# Species abundance distribution and occupancy-abundance object creation ####
 # Creates warnings associated with merging
 soa.tree <- sad.occ.abund(perf.n$counts$all, var = 'tree')
 
@@ -89,8 +89,8 @@ stack.plot <- ggplot(stack, aes(x = Sample, y = Abundance, fill = combo)) +
 stack.plot / (sad.tree + occ.abund.tree) +
   plot_annotation(tag_levels = list(c('A', 'B', 'C'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
-ggsave(here(figure.out, 'fig.2.tiff'), units = 'mm', width = 190, height = 175,
-       dpi = 500, compression = 'lzw')
+ggsave(here(figure.out, 'fig.2.tiff'), units = 'mm', width = 190, height = 190,
+       dpi = 300, compression = 'lzw')
 
 # Macrofungal survey ####
 # The authors found this table intriguing but difficult to incorporate into the manuscript.
@@ -157,7 +157,7 @@ ggplot(otu.accum, aes(x = Sites, y = Richness, ymax = UPR, ymin = LWR, color = G
         legend.key.size = unit(0.5, units = 'lines'),
         legend.text = element_markdown(size = 7))
 ggsave(here(figure.out, 'fig.s3.tiff'), units = 'mm', width = 140,
-       dpi = 500, compression = 'lzw')
+       dpi = 300, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')

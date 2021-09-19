@@ -1,7 +1,7 @@
 # Create Fig. 1 from the manuscript, which:
-# (a) shows a map of HJA showing the approximate location of each tree,
-# (b) the relationship between crown closure and height in crown for climbed and un-climbed trees,
-# (c) how each crown variable is calculated.
+# (A) shows a map of HJA showing the approximate location of each tree,
+# (B) the relationship between crown closure and height in crown for climbed and un-climbed trees,
+# (C) how each crown variable is calculated.
 
 # Load packages ####
 library(patchwork)
@@ -34,10 +34,6 @@ study.crowns %<>% dplyr::select(-x, -y, -z)
 min.zmed <- study.crowns$zmed %>% min()
 rand.crowns %<>% dplyr::select(-exp.top, -top.diff) %>%
   dplyr::filter(zmed >= min.zmed)
-# all.crowns <- rbind(study.crowns, rand.crowns)
-# 
-# all.loess <- loess.index(all.crowns)
-# study.loess <- all.loess[1:71, ]
 
 tree.plot <- ggplot(mapping = aes(x = height, y = closure)) +
   geom_line(data = rand.crowns, aes(group = tree), color = 'gray80', alpha = 0.5, show.legend = F) +
@@ -73,7 +69,6 @@ hja.ext <- hja.ext@ptr$vector
 hja.point <- c(median(hja.ext[1:2]), median(hja.ext[3:4]))
 
 # Make the raster plot of HJA
-# terra::as.data.frame currently gives many errors, but the output is still fine...
 rasters.df <- terra::as.data.frame(rasters, xy = T)
 
 # set seed to control point jitter
@@ -139,7 +134,7 @@ tree.map <-  map.plot / (tree.plot + crown.vars) +
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 
 ggsave(here(figure.out, 'fig.1.tiff'), tree.map, units = 'mm', width = 190, height = 190,
-       dpi = 500, compression = 'lzw')
+       dpi = 300, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')

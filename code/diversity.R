@@ -2,13 +2,13 @@
 # reports the results of ANOVAs tests for whether diversity differs among tree, needle age class, and exposure group,
 # differ more than expected by chance.
 
-# Creates Figure 2, which: ####
-# (a) shows how OTU richness varies among needle age classes,
-# (b) models the relationship between estimated richness and closure 
-# (c) how the Shannon diversity index differs among exposure groups, and
-# (d) how the Shannon diversity index differs among trees.
+# Creates Fig. 2, which: ####
+# (A) shows how OTU richness varies among needle age classes,
+# (B) models the relationship between estimated richness and closure 
+# (C) how the Shannon diversity index differs among exposure groups, and
+# (D) how the Shannon diversity index differs among trees.
 
-# Creates Figure S4, which: ####
+# Creates Fig. S4, which: ####
 # models the relationship between the estimated Shannon index and closure
 
 # New errors ####
@@ -253,7 +253,7 @@ tree.q1.pair <- ggplot(filter(perf.n.div, metric == 'q1'),
             fontface = 'bold', size = 2.5) +
   geom_pointrange(aes(y = log2(mean), ymin = log2(lci), ymax = log2(uci)),
                   filter(perf.n.boot.tree, metric == 'q1'),
-                  size = 0.25, color = 'white') +
+                  size = 0.1, color = 'white') +
   xlab('') +
   ylab('Estimated Shannon index\n') +
   labs(fill = 'Tree') +
@@ -293,7 +293,7 @@ group.q1.pair <- ggplot(filter(perf.n.div, metric == 'q1')) +
   plot_annotation(tag_levels = list(c('A', 'B', 'C', 'D'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 ggsave(here(figure.out, 'fig.3.tiff'), units = 'mm', width = 190, height = 120,
-       dpi = 500, compression = 'lzw')
+       dpi = 300, compression = 'lzw')
 
 # Diversity vs closure plot ####
 shannon$lme.fixed <- shannon.lme.red$fitted %>% data.frame() %>% .$fixed
@@ -321,7 +321,7 @@ shannon.closure.lme.plot <- ggplot(shannon, aes(x = closure, y = estimate)) +
 #   theme(plot.tag = element_text(size = 10, face = 'bold'))
 shannon.closure.lme.plot
 ggsave(here(figure.out, 'fig.s4.tiff'), units = 'mm', width = 140,
-       dpi = 500, compression = 'lzw')
+       dpi = 300, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')
