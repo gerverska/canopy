@@ -809,15 +809,15 @@ nmds.plot <- function(nmds.in, note = T, ...){
   
   if(note == T){
     plot <- plot + annotate('text', x = min(scores[, 2]), y = min(scores[, 3]),
-                            label = nmds.lab, hjust = 0, size = 3)
+                            label = nmds.lab, hjust = 0, size = 2.5)
   }
   
   plot +
     theme_cowplot() +
-    theme(axis.title.x = element_text(size = 8, face = 'bold'),
-          axis.text.x = element_text(size = 6),
-          axis.title.y = element_text(size = 8, face = 'bold'),
-          axis.text.y = element_text(size = 6),
+    theme(axis.title.x = element_text(size = 7, face = 'bold'),
+          axis.text.x = element_text(size = 7),
+          axis.title.y = element_text(size = 7, face = 'bold'),
+          axis.text.y = element_text(size = 7),
           legend.title = element_text(size = 7, face = 'bold'),
           legend.text = element_text(size = 7))
 }
@@ -852,10 +852,10 @@ dbrda.it <- function(log.in, rel.in = NULL, form, dist = 'bray', vectors = F, mi
       xlab(db.1.title) +
       ylab(db.2.title) +
       theme_cowplot() +
-      theme(axis.title.x = element_text(size = 8, face = 'bold'),
-            axis.text.x = element_text(size = 6),
-            axis.title.y = element_text(size = 8, face = 'bold'),
-            axis.text.y = element_text(size = 6),
+      theme(axis.title.x = element_text(size = 7, face = 'bold'),
+            axis.text.x = element_text(size = 7),
+            axis.title.y = element_text(size = 7, face = 'bold'),
+            axis.text.y = element_text(size = 7),
             legend.title = element_text(size = 7, face = 'bold'),
             legend.text = element_text(size = 7),
             legend.text.align = 0.5)
@@ -920,10 +920,10 @@ dbrda.it <- function(log.in, rel.in = NULL, form, dist = 'bray', vectors = F, mi
       xlab(db.1.title) +
       ylab(db.2.title) +
       theme_cowplot() +
-      theme(axis.title.x = element_text(size = 8, face = 'bold'),
-            axis.text.x = element_text(size = 6),
-            axis.title.y = element_text(size = 8, face = 'bold'),
-            axis.text.y = element_text(size = 6),
+      theme(axis.title.x = element_text(size = 7, face = 'bold'),
+            axis.text.x = element_text(size = 7),
+            axis.title.y = element_text(size = 7, face = 'bold'),
+            axis.text.y = element_text(size = 7),
             legend.title = element_text(size = 7, face = 'bold'),
             legend.text = element_text(size = 7))
   }

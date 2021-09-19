@@ -1,4 +1,4 @@
-# Create Figure S1 from the manuscript, which:
+# Create Fig. 1 from the manuscript, which:
 # (a) shows a map of HJA showing the approximate location of each tree,
 # (b) the relationship between crown closure and height in crown for climbed and un-climbed trees,
 # (c) how each crown variable is calculated.
@@ -51,11 +51,11 @@ tree.plot <- ggplot(mapping = aes(x = height, y = closure)) +
   labs(fill = 'Tree') +
   theme_cowplot() +
   theme(legend.title = element_text(size = 7, face = 'bold'),
-        legend.text = element_text(size = 6),
-        axis.title.x = element_text(face = 'bold', size = 8),
-        axis.text.x = element_text(size = 6),
-        axis.title.y = element_text(face = 'bold', size = 8),
-        axis.text.y = element_text(size = 6))
+        legend.text = element_text(size = 7),
+        axis.title.x = element_text(face = 'bold', size = 7),
+        axis.text.x = element_text(size = 7),
+        axis.title.y = element_text(face = 'bold', size = 7),
+        axis.text.y = element_text(size = 7))
 
 # HJA raster map ####
 # Load and trim the appropriate rasters
@@ -81,16 +81,14 @@ set.seed(123)
 hja.map <- ggplot(mapping = aes(x = x, y = y)) +
   geom_raster(data = rasters.df, aes(fill = hillshade.bare), alpha = 0.5, show.legend = F) +
   scale_fill_gradient(low = 'black', high = 'white') +
-  
   new_scale_fill() +
   geom_raster(data = rasters.df, aes(fill = elevation), alpha = 0.8) +
   scale_fill_gradient(low = 'grey20', high = 'white', name = 'Elevation (m)\n',
                       breaks = c(500, 750, 1000, 1250, 1500, 1750)) +
-  
   new_scale_fill() +
   geom_jitter(data = tree.tab, aes(x = x, y = y,
                                    fill = tree),
-              alpha = 0.95, size = 1, shape = 21,
+              alpha = 0.95, size = 1.5, shape = 21,
               width = 150, height = 150, show.legend = F) +
   # geom_point(data = tree.tab, aes(x = x, y = y,
   #                                  fill = tree),
@@ -103,10 +101,10 @@ hja.map <- ggplot(mapping = aes(x = x, y = y)) +
   xlab('\nEasting (m)') +
   ylab('Northing (m)\n') +
   theme_cowplot() +
-  theme(axis.text.x = element_text(size = 6, angle = 45, hjust = 1, vjust = 1),
-        axis.title.x = element_text(size = 8, face = 'bold'),
-        axis.text.y = element_text(size = 6, angle = 45, hjust = 1, vjust = 1),
-        axis.title.y = element_text(size = 8, face = 'bold'),
+  theme(axis.text.x = element_text(size = 7, angle = 45, hjust = 1, vjust = 1),
+        axis.title.x = element_text(size = 7, face = 'bold'),
+        axis.text.y = element_text(size = 7, angle = 45, hjust = 1, vjust = 1),
+        axis.title.y = element_text(size = 7, face = 'bold'),
         legend.key.height = unit(1, 'line'),
         legend.key.width = unit(0.5, 'line'),
         legend.position = 'right',
@@ -131,17 +129,17 @@ pnw %<>% st_transform(26910)
 pnw.map <- ggplot(data = pnw) +
   geom_sf(color = 'black', fill = 'white', size = 0.1) +
   geom_point(x = hja.point[1], y = hja.point[2], color = 'red', size = 0.5,
-             shape = 3, stroke = 0.25) +
+             shape = 3, stroke = 0.5) +
   theme_map()
 
 map.plot <- hja.map + inset_element(pnw.map, left = 0.13, bottom = 0.55, right = 0.45, top = 1, align_to = 'full')
 
-tree.map <-  map.plot / tree.plot / crown.vars +
-  plot_annotation(tag_levels = list(c('(a)', '', '(b)', '(c)'))) & 
+tree.map <-  map.plot / (tree.plot + crown.vars) +
+  plot_annotation(tag_levels = list(c('A', '', 'B', 'C'))) & 
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 
-ggsave(here(figure.out, 'fig.s1.tiff'), tree.map, units = 'in', width = 6, height = 8,
-       dpi = 600, compression = 'lzw')
+ggsave(here(figure.out, 'fig.1.tiff'), tree.map, units = 'mm', width = 190, height = 190,
+       dpi = 500, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')

@@ -3,15 +3,15 @@
 # trees, needle age classes, exposure groups, and along crown variables more than expected by chance.
 # Non-age variables are nested in age, and crown variables underwent marginal (type II) testing.
 
-# Creates Figure 2, which: ####
+# Creates Figure 4, which: ####
 # shows the results of db-RDA where compositional variation is constrained onto 
 # height, depth, and crown closure, separated by needle age class.
 
-# Creates Figure 3, which: ####
+# Creates Figure 5, which: ####
 # shows the results of partial Mantel tests of uncorrelated community structures for pairs of
 # needle age class transitions, separated by exposure group.
 
-# Creates Figure 4, which: ####
+# Creates Figure 6, which: ####
 # shows the relative abundances of Nothophaeocryptopus gaeumannii (a) and Rhabdocline parkeri
 # (b) across age classes and split by exposure group.
 
@@ -31,7 +31,7 @@
 # Creates Tables S8, which: ####
 # identifies indicator taxa for open and closed exposure groups
 
-# Creates Figure S7, which: #####
+# Creates Figure S5, which: #####
 # shows unconstrained NMDS ordinations for all retained samples, with points colored by
 # (a) tree of origin and
 # (b) needle age class.
@@ -154,14 +154,14 @@ a4.db <- dbrda.it(logged$a4, relative$a4, form = 'otu.tab ~ height + depth + clo
 a4.db$layers <- rev(a4.db$layers)
 
 # Combine all the plots
-ages.db <- (a1.db | a2.db) / (a3.db | a4.db) + plot_annotation(tag_levels = list(c('(a)\n\nA1',
-                                                         '(b)\n\nA2',
-                                                         '(c)\n\nA3',
-                                                         '(d)\n\nA4'))) +
+ages.db <- (a1.db | a2.db) / (a3.db | a4.db) + plot_annotation(tag_levels = list(c('A\n\nA1',
+                                                         'B\n\nA2',
+                                                         'C\n\nA3',
+                                                         'D\n\nA4'))) +
   plot_layout(guides = 'collect') &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
-ggsave(here(figure.out, 'fig.2.tiff'), ages.db, units = 'in', width = 8.75, height = 5.25,
-       dpi = 600, compression = 'lzw')
+ggsave(here(figure.out, 'fig.4.tiff'), ages.db, units = 'mm', width = 190, height = 140,
+       dpi = 500, compression = 'lzw')
 
 # Mantel tests between ages ####
 # Normal, unbootstrapped tests, accounting for xyz positions of each sampled height
@@ -194,7 +194,7 @@ time.plot <- ggplot(time, aes(x = Transition, y = mean)) +
   geom_pointrange(mapping = aes(ymin = lci, ymax = uci, color = Group),
                   size = 0.35,
                   position = position_dodge(width = 0.3)) +
-  geom_text(mapping = aes(label = sig, group = Group, y = mean - 0.02),
+  geom_text(mapping = aes(label = sig, group = Group, y = mean - 0.0075),
             color = 'white',
             fontface = 'bold',
             size = 4,
@@ -203,15 +203,15 @@ time.plot <- ggplot(time, aes(x = Transition, y = mean)) +
   xlab('\nTransition') +
   scale_color_colorblind() +
   theme_cowplot() +
-  theme(axis.title.x = element_text(size = 8, face = 'bold'),
-        axis.text.x = element_text(size = 8),
-        axis.title.y = element_text(size = 8, face = 'bold'),
-        axis.text.y = element_text(size = 6),
+  theme(axis.title.x = element_text(size = 7, face = 'bold'),
+        axis.text.x = element_text(size = 7),
+        axis.title.y = element_text(size = 7, face = 'bold'),
+        axis.text.y = element_text(size = 7),
         legend.title = element_text(size = 7, face = 'bold'),
         legend.text = element_text(size = 7))
 time.plot
-ggsave(here(figure.out, 'fig.3.tiff'), time.plot, units = 'in', width = 3.5, height = 2,
-       dpi = 600, compression = 'lzw')
+ggsave(here(figure.out, 'fig.5.tiff'), time.plot, units = 'mm', width = 90,
+       dpi = 500, compression = 'lzw')
 
 # Comparing the relative abundance of NOGA between exposure groups at each age ####
 # Nothophaeocryptopus gaeumannii (OTU.1)
@@ -226,7 +226,7 @@ ng.ra.plot <- ggplot(ng.sam.data, aes(x = group, y = ng.ra, fill = tree)) +
   ggbeeswarm::geom_quasirandom(width = 0.4, shape = 21, size = 1, show.legend = F) +
   scale_fill_colorblind() +
   xlab('\nExposure group') +
-  ylab(expression(atop(italic(N.~gaeumannii), relative~abundance))) +
+  ylab(expression(atop(bolditalic(N.~gaeumannii), bold(relative~abundance)))) +
   labs(fill = 'Tree') +
   theme_cowplot() +
   theme(panel.spacing = unit(1, 'lines'),
@@ -234,8 +234,8 @@ ng.ra.plot <- ggplot(ng.sam.data, aes(x = group, y = ng.ra, fill = tree)) +
         axis.ticks.x = element_blank(),
         axis.text.x = element_blank(),
         axis.title.x = element_blank(),
-        axis.title.y = element_text(size = 8),
-        axis.text.y = element_text(size = 6),
+        axis.title.y = element_text(size = 7),
+        axis.text.y = element_text(size = 7),
         legend.title = element_text(face = 'bold'))
 
 # Rhabdocline parkeri (OTU.2, OTU.6)
@@ -253,22 +253,22 @@ rp.ra.plot <- ggplot(rp.sam.data, aes(x = group, y = rp.ra, fill = tree)) +
   ggbeeswarm::geom_quasirandom(width = 0.4, shape = 21, size = 1) +
   scale_fill_colorblind() +
   xlab('\nExposure group') +
-  ylab(expression(atop(italic(R.~parkeri), relative~abundance))) +
+  ylab(expression(atop(bolditalic(R.~parkeri), bold(relative~abundance)))) +
   labs(fill = 'Tree') +
   theme_cowplot() +
   theme(panel.spacing = unit(1, 'lines'),
         strip.text = element_blank(),
         axis.ticks.x = element_blank(),
-        axis.title.x = element_text(face = 'bold', size = 8),
-        axis.text.x = element_text(size = 8, angle = 45, hjust = 1, vjust = 1),
-        axis.title.y = element_text(size = 8),
-        axis.text.y = element_text(size = 6),
+        axis.title.x = element_text(face = 'bold', size = 7),
+        axis.text.x = element_text(size = 7, angle = 45, hjust = 1, vjust = 1),
+        axis.title.y = element_text(size = 7),
+        axis.text.y = element_text(size = 7),
         legend.title = element_text(face = 'bold', size = 7),
         legend.text = element_text(size = 7))
-ng.ra.plot / rp.ra.plot + plot_layout(guides = 'collect') + plot_annotation(tag_levels = list(c('(a)', '(b)'))) &
+ng.ra.plot / rp.ra.plot + plot_layout(guides = 'collect') + plot_annotation(tag_levels = list(c('A', 'B'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
-ggsave(here(figure.out, 'fig.4.tiff'), units = 'in', width = 5, height = 3.5,
-       dpi = 600, compression = 'lzw')
+ggsave(here(figure.out, 'fig.6.tiff'), units = 'mm', width = 140,
+       dpi = 500, compression = 'lzw')
 
 # Tests of equal variance among trees, age classes, exposure groups ####
 pd.tree.all <- permdisp(logged$all, test = 'tree', n.perm = 999, bias = T)
@@ -416,20 +416,21 @@ isa.group.all %>%
 all <- nmds.mc.par(phy.in = logged$all, n.cores = 6, trymax = 75, perm = 99)
 
 all.tree <- nmds.plot(all, note = F, 'NMDS1', 'NMDS2') +
-  geom_point(shape = 21, size = 2, aes(fill = tree)) +
+  geom_point(shape = 21, size = 1.5, aes(fill = tree)) +
   scale_fill_colorblind() +
   labs(fill = 'Tree') +
   xlab('') +
   coord_fixed()
 all.age <- nmds.plot(all, note = T, 'NMDS1', 'NMDS2') +
-  geom_point(shape = 21, size = 2, aes(fill = age)) +
+  geom_point(shape = 21, size = 1.5, aes(fill = age)) +
   scale_fill_colorblind() +
   labs(fill = 'Age') +
   coord_fixed()
 
-all.nmds <- all.tree / all.age + plot_annotation(tag_levels = list(c('(a)', '(b)')))
-ggsave(here(figure.out, 'fig.s7.tiff'), all.nmds, units = 'in', width = 6, height = 8,
-       dpi = 600, compression = 'lzw')
+all.nmds <- all.tree / all.age + plot_annotation(tag_levels = list(c('A', 'B'))) &
+  theme(plot.tag = element_text(size = 10, face = 'bold'))
+ggsave(here(figure.out, 'fig.s5.tiff'), all.nmds, units = 'mm', width = 140, height = 140,
+       dpi = 500, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')

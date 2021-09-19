@@ -1,7 +1,7 @@
-# Create Figure S4 from the manuscript, which shows:
+# Create Figure S3 from the manuscript, which shows:
 # a species accumulation curve for each tree
 
-# Create Figure S5 from the manuscript, which shows:
+# Create Figure 2 from the manuscript, which shows:
 # (a) a stacked bar plot, with each tree getting its own bar,
 # (b) the species abundance distribution of OTUs across all eight trees, and
 # (c) the occupancy-abundance relationship for each OTU across all trees.
@@ -40,7 +40,7 @@ sad.tree <- ggplot(soa.tree$sad, aes(x = samples, y = otus)) +
   scale_fill_viridis_c() +
   scale_y_continuous(n.breaks = 8) +
   # xlab('\nOTU occupancy class\n(# trees occupied)') +
-  xlab('') +
+  xlab('\nOTU occupancy class\n(# trees occupied)') +
   ylab('Proportion of OTUs in\noccupancy class\n') +
   theme_cowplot() +
   theme(axis.title.x = element_text(face = 'bold', size = 8),
@@ -73,7 +73,7 @@ stack <- rank.n.stack(perf.n$counts$all, 'tree', 0.95)
 
 stack.plot <- ggplot(stack, aes(x = Sample, y = Abundance, fill = combo)) +
   geom_bar(stat = 'identity', width = 0.75, color = NA, show.legend = T) +
-  ylab('Relative abundance\n') +
+  ylab('Relative abundance') +
   xlab('') +
   ylim(c(0, 1)) +
   labs(fill = 'Genus | Order') +
@@ -86,11 +86,11 @@ stack.plot <- ggplot(stack, aes(x = Sample, y = Abundance, fill = combo)) +
         legend.key.size = unit(0.5, units = 'lines'),
         legend.text = element_markdown(size = 7))
 
-stack.plot / (sad.tree / occ.abund.tree) +
-  plot_annotation(tag_levels = list(c('(a)', '(b)', '(c)'))) &
+stack.plot / (sad.tree + occ.abund.tree) +
+  plot_annotation(tag_levels = list(c('A', 'B', 'C'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
-ggsave(here(figure.out, 'fig.s5.tiff'), units = 'in', width = 6, height = 8,
-       dpi = 600, compression = 'lzw')
+ggsave(here(figure.out, 'fig.2.tiff'), units = 'mm', width = 190, height = 175,
+       dpi = 500, compression = 'lzw')
 
 # Macrofungal survey ####
 # The authors found this table intriguing but difficult to incorporate into the manuscript.
@@ -156,8 +156,8 @@ ggplot(otu.accum, aes(x = Sites, y = Richness, ymax = UPR, ymin = LWR, color = G
         legend.title = element_text(size = 7, face = 'bold'),
         legend.key.size = unit(0.5, units = 'lines'),
         legend.text = element_markdown(size = 7))
-ggsave(here(figure.out, 'fig.s4.tiff'), units = 'in', width = 4, height = 3,
-       dpi = 600, compression = 'lzw')
+ggsave(here(figure.out, 'fig.s3.tiff'), units = 'mm', width = 140,
+       dpi = 500, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')

@@ -1,4 +1,4 @@
-# Create Figure S3 from the manuscript, which shows:
+# Create Figure S2 from the manuscript, which shows:
 # (a) mean leaf wetness vs height,
 # (b) seasonality of leaf wetness vs height,
 # (c) mean daily leaf wetness range vs height
@@ -43,10 +43,10 @@ diff.plot <- ggplot(diff, aes(x = height, y = mean.diff, color = tree)) +
   xlab("Height (m)") +
   labs(color = 'Tree') +
   theme_cowplot() +
-  theme(axis.title.x = element_text(face = 'bold', size = 8),
-        axis.text.x = element_text(face = 'bold', size = 6),
-        axis.title.y = element_text(face = 'bold', size = 8),
-        axis.text.y = element_text(face = 'bold', size = 6),
+  theme(axis.title.x = element_text(face = 'bold', size = 7),
+        axis.text.x = element_text(size = 7),
+        axis.title.y = element_text(face = 'bold', size = 7),
+        axis.text.y = element_text(size = 7),
         legend.position = 'none')
 diff.plot
 
@@ -65,10 +65,10 @@ mean.plot <- ggplot(mean.sd.lw, aes(x = height, y = mean, color = tree)) +
   xlab("\nHeight (m)") +
   labs(color = 'Tree') +
   theme_cowplot() +
-  theme(axis.title.x = element_text(face = 'bold', size = 8),
-        axis.text.x = element_text(face = 'bold', size = 6),
-        axis.title.y = element_text(face = 'bold', size = 8),
-        axis.text.y = element_text(face = 'bold', size = 6),
+  theme(axis.title.x = element_text(face = 'bold', size = 7),
+        axis.text.x = element_text(size = 7),
+        axis.title.y = element_text(face = 'bold', size = 7),
+        axis.text.y = element_text(size = 7),
         legend.position = 'none')
 mean.plot
 
@@ -81,10 +81,10 @@ sd.plot <- ggplot(mean.sd.lw, aes(x = height, y = sd, color = tree)) +
   xlab("\nHeight (m)") +
   labs(color = 'Tree') +
   theme_cowplot() +
-  theme(axis.title.x = element_text(face = 'bold', size = 8),
-        axis.text.x = element_text(face = 'bold', size = 6),
-        axis.title.y = element_text(face = 'bold', size = 8),
-        axis.text.y = element_text(face = 'bold', size = 6),
+  theme(axis.title.x = element_text(face = 'bold', size = 7),
+        axis.text.x = element_text(size = 7),
+        axis.title.y = element_text(face = 'bold', size = 7),
+        axis.text.y = element_text(size = 7),
         legend.position = 'none')
 sd.plot
 
@@ -107,21 +107,21 @@ cont.plot <- ggplot(mar, aes(x = height, y = mean, color = tree)) +
   xlab("\nHeight (m)") +
   labs(color = 'Tree') +
   theme_cowplot() +
-  theme(axis.title.x = element_text(face = 'bold', size = 8),
-        axis.text.x = element_text(face = 'bold', size = 6),
-        axis.title.y = element_text(face = 'bold', size = 8),
-        axis.text.y = element_text(face = 'bold', size = 6),
+  theme(axis.title.x = element_text(face = 'bold', size = 7),
+        axis.text.x = element_text(size = 7),
+        axis.title.y = element_text(face = 'bold', size = 7),
+        axis.text.y = element_text(size = 7),
         legend.title = element_text(face = 'bold', size = 7),
         legend.text = element_text(size = 7))
 cont.plot
 
 # Combine all plots and output ####
 lw.plots <- (mean.plot | sd.plot) / (diff.plot | cont.plot) +
-  plot_annotation(tag_levels = list(c('(a)', '(b)', '(c)', '(d)'))) &
+  plot_annotation(tag_levels = list(c('A', 'B', 'C', 'D'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 lw.plots
-ggsave(here(figure.out, 'fig.s3.tiff'), units = 'in', height = 5.75, width = 8.75,
-       dpi = 600, compression = 'lzw')
+ggsave(here(figure.out, 'fig.s2.tiff'), units = 'mm', height = 140, width = 190,
+       dpi = 500, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')

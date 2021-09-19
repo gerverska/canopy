@@ -2,14 +2,20 @@
 # reports the results of ANOVAs tests for whether diversity differs among tree, needle age class, and exposure group,
 # differ more than expected by chance.
 
-# Creates Figure 1, which: ####
+# Creates Figure 2, which: ####
 # (a) shows how OTU richness varies among needle age classes,
-# (b) how the Shannon diversity index differs among exposure groups, and
-# (c) how the Shannon diversity index differs among trees.
+# (b) models the relationship between estimated richness and closure 
+# (c) how the Shannon diversity index differs among exposure groups, and
+# (d) how the Shannon diversity index differs among trees.
 
-# Creates Figure S6, which: ####
-# (a) models the relationship between estimated richness and closure
-# (b) models the relationship between the estimated Shannon index and closure
+# Creates Figure S4, which: ####
+# models the relationship between the estimated Shannon index and closure
+
+# New errors ####
+
+# Warning message:
+#   In is.na(x) : is.na() applied to non-(list or vector) of type 'expression'
+# It's tied to the labels for the lme plots. Low priority, but does need addressing...
 
 # Load packages ####
 library(patchwork)
@@ -36,7 +42,8 @@ dir.create(table.out, recursive = T)
 # Read in files ####
 perf.n <- readRDS(here('data', 'compile', 'perf.n.clean.rds'))
 
-ages <- png::readPNG(here('data', 'media', 'shaw.age.class.png'), native = T)
+# Image no longer needed
+# ages <- png::readPNG(here('data', 'media', 'shaw.age.class.png'), native = T)
 
 # Estimate richness and diversity ####
 perf.n.div <- inext.div(perf.n$counts$all, cores = 6)
@@ -200,7 +207,7 @@ age.q0.pair <- ggplot(filter(perf.n.div, metric == 'q0'),
   geom_violin(fill = 'white', color = 'black', draw_quantiles = c(0.25, 0.5, 0.75)) +
   geom_text(aes(label = Letters),
             filter(perf.n.tukey.age, metric == 'q0'),
-            fontface = 'bold', size = 3) +
+            fontface = 'bold', size = 2.5) +
   geom_pointrange(aes(y = mean, ymin = lci, ymax = uci),
                   filter(perf.n.boot.age, metric == 'q0'),
                   size = 0.25, color = 'red') +
@@ -209,10 +216,32 @@ age.q0.pair <- ggplot(filter(perf.n.div, metric == 'q0'),
   labs(fill = 'Age') +
   scale_fill_colorblind() +
   theme_cowplot() +
-  theme(axis.text.x = element_text(face = 'bold', size = 8),
+  theme(axis.text.x = element_text(face = 'bold', size = 7),
         axis.ticks.x = element_blank(),
-        axis.title.y = element_text(face = 'bold', size = 8),
-        axis.text.y = element_text(face = 'bold', size = 6))
+        axis.title.y = element_text(face = 'bold', size = 7),
+        axis.text.y = element_text(size = 7))
+
+# Richness vs closure plot ####
+rich$lme.fixed <- rich.lme.red$fitted %>% data.frame() %>% .$fixed
+rich.lab <- substitute(P~p*','~R^2~"="~r2, list(p = rich.lme.p, r2 = rich.lme.r2)) %>% as.expression()
+age.cols <- c('#ff0000', '#ff0099', '#ff00ff', '#0000ff')
+
+rich.closure.lme <- ggplot(rich, aes(x = closure, y = estimate)) +
+  geom_point(size = 1.5, shape = 21, aes(fill = tree), show.legend = F) +
+  geom_line(aes(y = lme.fixed, color = age), size = 1) +
+  xlab('\nCrown closure index') +
+  ylab('Estimated richness\n') +
+  labs(color = 'Age', fill = 'Tree') +
+  annotate('text', x = 10, y = 20, label = rich.lab, parse = T, size = 2.5) +
+  scale_fill_colorblind() +
+  scale_color_manual(values = age.cols) +
+  theme_cowplot() +
+  theme(legend.title = element_text(size = 7, face = 'bold'),
+        legend.text = element_text(size = 7),
+        axis.title.x = element_text(face = 'bold', size = 7),
+        axis.text.x = element_text(size = 7),
+        axis.title.y = element_text(face = 'bold', size = 7),
+        axis.text.y = element_text(size = 7))
 
 # Shannon, tree, pairwise ####
 tree.q1.pair <- ggplot(filter(perf.n.div, metric == 'q1'),
@@ -221,7 +250,7 @@ tree.q1.pair <- ggplot(filter(perf.n.div, metric == 'q1'),
               color = 'white', draw_quantiles = c(0.25, 0.5, 0.75)) +
   geom_text(aes(label = Letters, y = estimate),
             filter(perf.n.tukey.tree, metric == 'q1'),
-            fontface = 'bold', size = 3) +
+            fontface = 'bold', size = 2.5) +
   geom_pointrange(aes(y = log2(mean), ymin = log2(lci), ymax = log2(uci)),
                   filter(perf.n.boot.tree, metric == 'q1'),
                   size = 0.25, color = 'white') +
@@ -232,10 +261,11 @@ tree.q1.pair <- ggplot(filter(perf.n.div, metric == 'q1'),
   theme_cowplot() +
   theme(axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
-        axis.title.y = element_text(face = 'bold', size = 8),
-        axis.text.y = element_text(face = 'bold', size = 6),
+        axis.title.y = element_text(face = 'bold', size = 7),
+        axis.text.y = element_text(size = 7),
         legend.title = element_text(face = 'bold', size = 7),
-        legend.text = element_text(size = 7))
+        legend.text = element_text(size = 7),
+        legend.key.size = unit(0.75, 'line'))
 
 # Shannon, group ####
 group.q1.pair <- ggplot(filter(perf.n.div, metric == 'q1')) +
@@ -253,67 +283,45 @@ group.q1.pair <- ggplot(filter(perf.n.div, metric == 'q1')) +
   labs(fill = 'Group') +
   scale_fill_colorblind() +
   theme_cowplot() +
-  theme(axis.text.x = element_text(face = 'bold', size = 8),
+  theme(axis.text.x = element_text(face = 'bold', size = 7),
         axis.ticks.x = element_blank(),
-        axis.title.y = element_text(face = 'bold', size = 8),
-        axis.text.y = element_text(face = 'bold', size = 6))
+        axis.title.y = element_text(face = 'bold', size = 7),
+        axis.text.y = element_text(size = 7))
 
 # Figure output
-(age.q0.pair + ages) / (group.q1.pair + tree.q1.pair)  +
-  plot_annotation(tag_levels = list(c('(a)', '', '(b)', '(c)'))) &
+(age.q0.pair + rich.closure.lme) / (tree.q1.pair + group.q1.pair)  +
+  plot_annotation(tag_levels = list(c('A', 'B', 'C', 'D'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
-ggsave(here(figure.out, 'fig.1.tiff'), units = 'in', height = 5.75, width = 8.75,
-       dpi = 600, compression = 'lzw')
-
-# Richness vs closure plot ####
-rich$lme.fixed <- rich.lme.red$fitted %>% data.frame() %>% .$fixed
-rich.lab <- substitute(P~p*','~R^2~"="~r2, list(p = rich.lme.p, r2 = rich.lme.r2)) %>% as.expression()
-age.cols <- c('#ff0000', '#ff0099', '#ff00ff', '#0000ff')
-
-rich.closure.lme.plot <- ggplot(rich, aes(x = closure, y = estimate)) +
-  geom_point(size = 3, shape = 21, aes(fill = tree), show.legend = F) +
-  geom_line(aes(y = lme.fixed, color = age), size = 1.5) +
-  xlab('\nCrown closure index') +
-  ylab('Estimated richness\n') +
-  labs(color = 'Age', fill = 'Tree') +
-  annotate('text', x = 10, y = 20, label = rich.lab, parse = T, size = 3) +
-  scale_fill_colorblind() +
-  scale_color_manual(values = age.cols) +
-  theme_cowplot() +
-  theme(legend.title = element_text(size = 7, face = 'bold'),
-        legend.text = element_text(size = 6),
-        axis.title.x = element_text(face = 'bold', size = 8),
-        axis.text.x = element_text(size = 6),
-        axis.title.y = element_text(face = 'bold', size = 8),
-        axis.text.y = element_text(size = 6))
-rich.closure.lme.plot
+ggsave(here(figure.out, 'fig.3.tiff'), units = 'mm', width = 190, height = 120,
+       dpi = 500, compression = 'lzw')
 
 # Diversity vs closure plot ####
 shannon$lme.fixed <- shannon.lme.red$fitted %>% data.frame() %>% .$fixed
 shannon.lab <- substitute(P~p*','~R^2~"="~r2, list(p = shannon.lme.p, r2 = shannon.lme.r2)) %>% as.expression()
 
 shannon.closure.lme.plot <- ggplot(shannon, aes(x = closure, y = estimate)) +
-  geom_point(size = 3, shape = 21, aes(fill = tree)) +
+  geom_point(size = 1.5, shape = 21, aes(fill = tree)) +
   geom_line(aes(y = lme.fixed), size = 1.5) +
   xlab('\nCrown closure index') +
   ylab('Estimated Shannon index\n') +
   labs(color = 'Age', fill = 'Tree') +
-  annotate('text', x = 10, y = 8, label = shannon.lab, parse = T, size = 3) +
+  annotate('text', x = 10, y = 8, label = shannon.lab, parse = T, size = 2.5) +
   scale_fill_colorblind() +
   theme_cowplot() +
   theme(legend.title = element_text(size = 7, face = 'bold'),
-        legend.text = element_text(size = 6),
-        axis.title.x = element_text(face = 'bold', size = 8),
-        axis.text.x = element_text(size = 6),
-        axis.title.y = element_text(face = 'bold', size = 8),
-        axis.text.y = element_text(size = 6))
-shannon.closure.lme.plot
+        legend.text = element_text(size = 7),
+        axis.title.x = element_text(face = 'bold', size = 7),
+        axis.text.x = element_text(size = 7),
+        axis.title.y = element_text(face = 'bold', size = 7),
+        axis.text.y = element_text(size = 7))
+
 # Figure output
-rich.closure.lme.plot / shannon.closure.lme.plot +
-  plot_annotation(tag_levels = list(c('(a)', '(b)'))) &
-  theme(plot.tag = element_text(size = 10, face = 'bold'))
-ggsave(here(figure.out, 'fig.s6.tiff'), units = 'in', height = 8, width = 6,
-       dpi = 600, compression = 'lzw')
+# rich.closure.lme.plot / shannon.closure.lme.plot +
+#   plot_annotation(tag_levels = list(c('(a)', '(b)'))) &
+#   theme(plot.tag = element_text(size = 10, face = 'bold'))
+shannon.closure.lme.plot
+ggsave(here(figure.out, 'fig.s4.tiff'), units = 'mm', width = 140,
+       dpi = 500, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')
