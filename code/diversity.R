@@ -316,12 +316,9 @@ shannon.closure.lme.plot <- ggplot(shannon, aes(x = closure, y = estimate)) +
         axis.text.y = element_text(size = 7))
 
 # Figure output
-# rich.closure.lme.plot / shannon.closure.lme.plot +
-#   plot_annotation(tag_levels = list(c('(a)', '(b)'))) &
-#   theme(plot.tag = element_text(size = 10, face = 'bold'))
 shannon.closure.lme.plot
-ggsave(here(figure.out, 'fig.s4.tiff'), units = 'mm', width = 140,
-       dpi = 300, compression = 'lzw')
+ggsave(here(figure.out, 'fig.s4.png'), units = 'mm', width = 140,
+       dpi = 300)
 
 # Get session info ####
 session.path <- here('output', 'sessions')
