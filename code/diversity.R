@@ -317,8 +317,8 @@ shannon.closure.lme.plot <- ggplot(shannon, aes(x = closure, y = estimate)) +
 
 # Figure output
 shannon.closure.lme.plot
-ggsave(here(figure.out, 'fig.s4.png'), units = 'mm', width = 140,
-       dpi = 300)
+ggsave(here(figure.out, 'fig.s4.tiff'), units = 'mm', width = 140,
+       dpi = 300, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')
