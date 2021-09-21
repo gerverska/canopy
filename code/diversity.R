@@ -293,7 +293,7 @@ group.q1.pair <- ggplot(filter(perf.n.div, metric == 'q1')) +
   plot_annotation(tag_levels = list(c('A', 'B', 'C', 'D'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 ggsave(here(figure.out, 'fig.3.tiff'), units = 'mm', width = 190, height = 120,
-       dpi = 500, compression = 'lzw')
+       dpi = 300, compression = 'lzw')
 
 # Diversity vs closure plot ####
 shannon$lme.fixed <- shannon.lme.red$fitted %>% data.frame() %>% .$fixed
@@ -318,7 +318,7 @@ shannon.closure.lme.plot <- ggplot(shannon, aes(x = closure, y = estimate)) +
 # Figure output
 shannon.closure.lme.plot
 ggsave(here(figure.out, 'fig.s4.tiff'), units = 'mm', width = 140,
-       dpi = 500, compression = 'lzw')
+       dpi = 300, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')

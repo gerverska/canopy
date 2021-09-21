@@ -90,7 +90,7 @@ stack.plot / (sad.tree + occ.abund.tree) +
   plot_annotation(tag_levels = list(c('A', 'B', 'C'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 ggsave(here(figure.out, 'fig.2.tiff'), units = 'mm', width = 190, height = 190,
-       dpi = 500, compression = 'lzw')
+       dpi = 300, compression = 'lzw')
 
 # Macrofungal survey ####
 # The authors found this table intriguing but difficult to incorporate into the manuscript.
@@ -157,7 +157,7 @@ ggplot(otu.accum, aes(x = Sites, y = Richness, ymax = UPR, ymin = LWR, color = G
         legend.key.size = unit(0.5, units = 'lines'),
         legend.text = element_markdown(size = 7))
 ggsave(here(figure.out, 'fig.s3.tiff'), units = 'mm', width = 140,
-       dpi = 500, compression = 'lzw')
+       dpi = 300, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')
