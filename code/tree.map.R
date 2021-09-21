@@ -134,7 +134,7 @@ tree.map <-  map.plot / (tree.plot + crown.vars) +
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 
 ggsave(here(figure.out, 'fig.1.tiff'), tree.map, units = 'mm', width = 190, height = 190,
-       dpi = 300, compression = 'lzw')
+       dpi = 500, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')

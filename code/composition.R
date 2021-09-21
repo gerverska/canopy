@@ -161,7 +161,7 @@ ages.db <- (a1.db | a2.db) / (a3.db | a4.db) + plot_annotation(tag_levels = list
   plot_layout(guides = 'collect') &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 ggsave(here(figure.out, 'fig.4.tiff'), ages.db, units = 'mm', width = 190, height = 140,
-       dpi = 300, compression = 'lzw')
+       dpi = 500, compression = 'lzw')
 
 # Mantel tests between ages ####
 # Normal, unbootstrapped tests, accounting for xyz positions of each sampled height
@@ -211,7 +211,7 @@ time.plot <- ggplot(time, aes(x = Transition, y = mean)) +
         legend.text = element_text(size = 7))
 time.plot
 ggsave(here(figure.out, 'fig.5.tiff'), time.plot, units = 'mm', width = 90,
-       dpi = 300, compression = 'lzw')
+       dpi = 500, compression = 'lzw')
 
 # Comparing the relative abundance of NOGA between exposure groups at each age ####
 # Nothophaeocryptopus gaeumannii (OTU.1)
@@ -268,7 +268,7 @@ rp.ra.plot <- ggplot(rp.sam.data, aes(x = group, y = rp.ra, fill = tree)) +
 ng.ra.plot / rp.ra.plot + plot_layout(guides = 'collect') + plot_annotation(tag_levels = list(c('A', 'B'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 ggsave(here(figure.out, 'fig.6.tiff'), units = 'mm', width = 140,
-       dpi = 300, compression = 'lzw')
+       dpi = 500, compression = 'lzw')
 
 # Tests of equal variance among trees, age classes, exposure groups ####
 pd.tree.all <- permdisp(logged$all, test = 'tree', n.perm = 999, bias = T)
@@ -430,7 +430,7 @@ all.age <- nmds.plot(all, note = T, 'NMDS1', 'NMDS2') +
 all.nmds <- all.tree / all.age + plot_annotation(tag_levels = list(c('A', 'B'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 ggsave(here(figure.out, 'fig.s5.tiff'), all.nmds, units = 'mm', width = 140, height = 140,
-       dpi = 300, compression = 'lzw')
+       dpi = 500, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')
