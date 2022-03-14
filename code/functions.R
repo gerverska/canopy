@@ -234,13 +234,15 @@ study.crown <- function(tree.clips, trees.df, hts.df, cores) {
   stats
   
 }
-loess.index <- function(all.crowns.df, span = 0.5, degree = 1, df.out = T){
+loess.index <- function(all.crowns.df, form, span = 0.5, degree = 1, df.out = T){
   # This function accepts a data frame containing the height, depth, and closure
   # values for either virtually sampled or actually sampled trees, fits a LOESS
   # curve for a supplied span and degree, and optionally outputs a data frame
   # or the raw fit as output.
   
-  fit <- loess(closure ~ height + depth, all.crowns.df,
+  form %<>% as.formula()
+  
+  fit <- loess(form, all.crowns.df,
                span = span, degree = degree
   )
   if(df.out == T){
@@ -250,6 +252,17 @@ loess.index <- function(all.crowns.df, span = 0.5, degree = 1, df.out = T){
   else if(df.out == F){
     fit
   }
+}
+kmean.it <- function(all.crowns.df, var, k = 2, iterate = 999, starts = 999){
+  stats <- data.frame(var = all.crowns.df[, var])
+  
+  set.seed(666)
+  stats %<>% kmeans(centers = k, iter.max = iterate, nstart = starts)
+  
+  all.crowns.df$group <- stats$cluster
+  
+  all.crowns.df
+  
 }
 
 # Phyloseq processing ####
@@ -356,24 +369,25 @@ joiner <- function(phy.in){
   meta.tab <- phy.in@sam_data %>% data.frame() %>%
     dplyr::select(sampleID, age, height, tree, tree.ht)
   meta.tab$tree %<>% str_replace('DT_NEIGHBOR', 'DT NEIGHBOR')
-  meta.tab %<>% left_join(resid.crowns, by = c('tree', 'height'))
+  meta.tab %<>% left_join(k.crowns, by = c('tree', 'height'))
   rownames(meta.tab) <- meta.tab$sampleID
   sample_data(phy.in) <- sample_data(meta.tab)
   phy.in
 }
-phy.clean <- function(phy.in){
+phy.clean <- function(phy.in, depth = 0){
   # This function accepts a phyloseq object as input and returns a list of phyloseq objects
   # that have received different levels of processing.
   
-  counts <- age.split(phy.in)
+  counts <- age.split(phy.in, depth = depth)
   relative <- lapply(counts, transform_sample_counts, fun = rel)
   logged <- lapply(relative, gen.log)
   # # Apply group.split only works like this because none of the filtering operates at the level of reads in a given sample.
   # # In theory, age.split, group.split, and tree.split can happen anywhere in the pipeline!
-  grouped <- lapply(logged, group.split)
-  tree.log <- tree.split(counts$all) %>% lapply(transform_sample_counts, fun = rel) %>% lapply(gen.log)
-  list(counts = counts, relative = relative, logged = logged,
-       grouped = grouped, tree.log = tree.log)
+  # grouped <- lapply(logged, group.split)
+  # tree.log <- tree.split(counts$all) %>% lapply(transform_sample_counts, fun = rel) %>% lapply(gen.log)
+  # list(counts = counts, relative = relative, logged = logged,
+  #      grouped = grouped, tree.log = tree.log)
+  list(counts = counts, relative = relative, logged = logged)
 }
 age.split <- function(phy.in, prop = 0, depth = 0){
   # This function takes a phyloseq object as input, removes sample heights that failed to occur in the first age class,
@@ -616,7 +630,7 @@ inext.div <- function(in.phy, level = 1000, cores){
   div %>% left_join(meta.tab, by = 'sample') %>% filter(metric != 'q2')
   
 }
-anova.crown <- function(x, form){
+anova.crown <- function(x, form, adjust = F){
   # This function accepts a grouped data frame and an ANOVA model formula as input,
   # performs an ANOVA testing the supplied model for estimated richness and Shannon index,
   # cleans up the test output, and returns a results data frame as the final output.
@@ -632,14 +646,27 @@ anova.crown <- function(x, form){
   
   form %<>% as.formula()
   model <- aov(form, data = x)
-  test <- car::Anova(model, white.adjust = F) %>%
-    data.frame() %>% rownames_to_column(var = 'Term') %>%
-    select(Term, Df, `F` = F.value, P = Pr..F.)
+  test <- car::Anova(model, white.adjust = adjust)
+  if(adjust == T){
+    
+    test %<>% data.frame() %>% rownames_to_column(var = 'Term') %>%
+      select(Term, Df, `F`, P = Pr..F.)
+    
+  } else {
+    
+    test %<>% data.frame() %>% rownames_to_column(var = 'Term') %>%
+      select(Term, Df, `F` = F.value, P = Pr..F.)
+    
+  }
+
   test[,3:4] <- round(test[, 3:4], digits = 3)
 
   test$P %<>% as.character()
   test[test < 0.001] <- '< 0.001'
 
+  total <- data.frame(Term = 'Total', Df = sum(test$Df))
+  test %<>% bind_rows(total)
+  
   test$metric <- title
   
   test
@@ -685,9 +712,15 @@ mean.boot <- function(x, y, var, n.perm = 999){
   # and the number of bootstrap permutations (n.perm) as inputs, calculates bootstrapped mean
   # alpha diversity values, and returns tibble columns of these values as output.
   
+  metric <- y$metric %>% unique()
+  if(metric == 'q1'){
+    x$estimate %<>% log2()
+  }
+  
   boots <- replicate(n.perm, mean(sample(x$estimate, replace = T)))
+  
   tibble(metric = y$metric,
-         factor = y[, var],
+         factor = y[, var, drop = T],
          estimate = boots)
 }
 
@@ -819,7 +852,9 @@ nmds.plot <- function(nmds.in, note = T, ...){
           axis.title.y = element_text(size = 7, face = 'bold'),
           axis.text.y = element_text(size = 7),
           legend.title = element_text(size = 7, face = 'bold'),
-          legend.text = element_text(size = 7))
+          legend.text = element_text(size = 7),
+          plot.background = element_rect(fill = 'white', color = 'white')
+          )
 }
 dbrda.it <- function(log.in, rel.in = NULL, form, dist = 'bray', vectors = F, min.r = NULL, max.p = NULL){
   # This function accepts a phyloseq object, an optional relative abundance-transformed phyloseq object for taxonomic vector
@@ -828,9 +863,10 @@ dbrda.it <- function(log.in, rel.in = NULL, form, dist = 'bray', vectors = F, mi
   # environment) is returned as output.
   
   otu.tab <- log.in@otu_table %>% data.frame()
-  meta.tab <- log.in@sam_data %>% data.frame() %>% dplyr::select(sampleID, tree, age, height, depth, closure, residuals, group)
+  # meta.tab <- log.in@sam_data %>% data.frame() %>% dplyr::select(sampleID, tree, age, height, depth, closure, residuals, group)
+  # meta.tab <- log.in@sam_data %>% data.frame() %>% dplyr::select(sampleID, tree, age, height, depth, closure, group)
+  meta.tab <- log.in@sam_data %>% data.frame() %>% dplyr::select(sampleID, tree, age, height, closure, group)
   meta.tab %<>% cbind(otu.tab)
-  tax.tab <- log.in@tax_table %>% data.frame() %>% dplyr::select(Genus_species) %>% rownames_to_column(var = 'var')
   form %<>% as.formula()
   
   obj <- dbrda(formula = form, distance = dist, data = meta.tab)
@@ -839,9 +875,11 @@ dbrda.it <- function(log.in, rel.in = NULL, form, dist = 'bray', vectors = F, mi
   prop <- stats$cont[[1]] %>% data.frame()
   db.1.prop <- prop$dbRDA1[2] %>% round(digits = 3) * 100
   db.2.prop <- prop$dbRDA2[2] %>% round(digits = 3) * 100
+  # db.2.prop <- prop$MDS1[2] %>% round(digits = 3) * 100
   
   db.1.title <- paste0('\ndbRDA1 [', db.1.prop, '%]')
   db.2.title <- paste0('dbRDA2 [', db.2.prop, '%]\n')
+  # db.2.title <- paste0('MDS1 [', db.2.prop, '%]\n')
   
   sites <- scores(obj, display = 'sites') %>% data.frame() %>%
     rownames_to_column(var = 'sampleID') %>% left_join(meta.tab, by = 'sampleID') %>%
@@ -849,6 +887,7 @@ dbrda.it <- function(log.in, rel.in = NULL, form, dist = 'bray', vectors = F, mi
   
   if(vectors == F){
     plot <- ggplot(data = sites, mapping = aes(x = dbRDA1, y = dbRDA2)) +
+      # plot <- ggplot(data = sites, mapping = aes(x = dbRDA1, y = MDS1)) +
       xlab(db.1.title) +
       ylab(db.2.title) +
       theme_cowplot() +
@@ -865,17 +904,20 @@ dbrda.it <- function(log.in, rel.in = NULL, form, dist = 'bray', vectors = F, mi
     
     vect <- stats$biplot %>% data.frame() %>% rownames_to_column(var = 'var')
     set.seed(666)
-    term.test <- anova(obj, by = 'margin') %>% data.frame()
-    vect$p <- term.test[1:3, 4]
-    vect$sig <- ifelse(vect$p < max.p, '*', '')
-    vect %<>% dplyr::select(-dbRDA3, -MDS1, -MDS2, -MDS3)
+    term.test <- anova(obj, by = 'margin', strata = meta.tab$tree) %>% data.frame()
+    vect$p <- term.test[1:2, 4]
+    # vect$p <- term.test[1, 4]
+    # vect$r <- prop$dbRDA1[2]
+    vect$r <- 0.1
+    # vect$sig <- ifelse(vect$p < max.p, '*', '')
+    vect %<>% dplyr::select(-MDS4, -MDS1, -MDS2, -MDS3)
+    # vect %<>% dplyr::select(-MDS4, -MDS5, -MDS2, -MDS3)
     
     vect.otu.tab <- rel.in@otu_table %>% data.frame()
-    vect.otu.tab$otu.2 <- vect.otu.tab$otu.2 + vect.otu.tab$otu.6
-    vect.otu.tab %<>% select(otu.1, otu.2)
+    vect.otu.tab %<>% dplyr::select(otu.1, otu.2, otu.3, otu.6)
     
     set.seed(666)
-    fit <- envfit(obj, vect.otu.tab)
+    fit <- envfit(obj, vect.otu.tab, strata = meta.tab$tree)
     # adj.p.val <- p.adjust(fit$vectors$pvals, method = 'fdr')
     # fit$vectors$pvals <- adj.p.val
     
@@ -884,48 +926,47 @@ dbrda.it <- function(log.in, rel.in = NULL, form, dist = 'bray', vectors = F, mi
     #   filter(r > min.r, p < max.p) %>% dplyr::select(-r) %>% left_join(tax.tab, by = 'var')
     
     fit.filt <- data.frame(p = fit$vectors$pvals, r = fit$vectors$r) %>%
-      rownames_to_column(var = 'var') %>%
-      left_join(tax.tab, by = 'var')
+      rownames_to_column(var = 'var')
     
     fit.scores <- as.data.frame(scores(fit, display = 'vectors')) %>%
       rownames_to_column(var = 'var') %>% right_join(fit.filt, by = 'var')
     
-    fit.scores$sig <- ifelse(fit.scores$p < max.p & fit.scores$r > min.r, '*', '')
-    fit.scores$r <- NULL
+    # sig <- fit.scores %>% filter(p < max.p, r > min.r) %>% dplyr::select(-r) %>% 
+    #   rbind(vect) %>% filter(p < max.p)
+    # fit.scores$r <- NULL
     
-    fit.scores$Genus_species %<>% str_replace('Nothophaeocryptopus', 'N.')
-    fit.scores$Genus_species %<>% str_replace('Rhabdocline', 'R.')
-    fit.scores$var <- fit.scores$Genus_species
-    fit.scores$Genus_species <- NULL
-    
-    vect <- rbind(vect, fit.scores)
+    vect %<>% rbind(fit.scores)
+    sig <- vect %>% filter(p < max.p, r > min.r)
     
     plot <- ggplot(data = sites, mapping = aes(x = dbRDA1, y = dbRDA2)) +
-      geom_segment(data = vect,
-                   aes(x = 0,
-                       xend = dbRDA1 * 1.5,
-                       y = 0,
-                       yend = dbRDA2 * 1.5,
-                       color = var),
-                   alpha = 0.7,
-                   arrow = arrow(length = unit(2, 'mm')),
-                   size = 0.75) +
-      geom_text(data = vect,
-                mapping = aes(x = dbRDA1 * 2,
-                              y = dbRDA2 * 2,
-                              label = sig),
-                color = 'black',
-                fontface = 'bold',
-                size = 5) +
-      xlab(db.1.title) +
-      ylab(db.2.title) +
-      theme_cowplot() +
-      theme(axis.title.x = element_text(size = 7, face = 'bold'),
-            axis.text.x = element_text(size = 7),
-            axis.title.y = element_text(size = 7, face = 'bold'),
-            axis.text.y = element_text(size = 7),
-            legend.title = element_text(size = 7, face = 'bold'),
-            legend.text = element_text(size = 7))
+    # plot <- ggplot(data = sites, mapping = aes(x = dbRDA1, y = MDS1)) +
+    geom_segment(data = vect,
+                 aes(x = 0,
+                     xend = dbRDA1 * 1.5,
+                     y = 0,
+                     yend = dbRDA2 * 1.5,
+                     # yend = MDS1 * 1.5,
+                     color = var),
+                 alpha = 0.7,
+                 arrow = arrow(length = unit(2, 'mm')),
+                 size = 0.75) +
+    geom_point(aes(x = dbRDA1 * 1.6,
+                   y = dbRDA2 * 1.6
+                   # y = MDS1 * 1.6
+                   ),
+               sig,
+               shape = 8,
+               size = 1) +
+    xlab(db.1.title) +
+    ylab(db.2.title) +
+    theme_cowplot() +
+    theme(axis.title.x = element_text(size = 7, face = 'bold'),
+          axis.text.x = element_text(size = 7),
+          axis.title.y = element_text(size = 7, face = 'bold'),
+          axis.text.y = element_text(size = 7),
+          legend.title = element_text(size = 7, face = 'bold'),
+          legend.text = element_text(size = 7),
+          legend.text.align = 0)
   }
   
   return(plot)
@@ -933,7 +974,7 @@ dbrda.it <- function(log.in, rel.in = NULL, form, dist = 'bray', vectors = F, mi
 }
 
 # Analyses
-permdisp <- function(phy.in, test = 'Group', method = 'bray', type = 'median', n.perm = 999, bias = F, pair = F) {
+permdisp <- function(phy.in, test = 'group', method = 'bray', type = 'median', n.perm = 999, bias = F, pair = F, block = 'none') {
   # This function accepts phyloseq objects as inputs, performs PERMDISP,
   # and returns formatted data frames for visualization.
   # Relevant phyloseq::distance, vegan::betadisper, and vegan::permutest options can be set as well.
@@ -942,10 +983,6 @@ permdisp <- function(phy.in, test = 'Group', method = 'bray', type = 'median', n
   
   d <- distance(phy.in, method = method)
   meta.tab <- phy.in@sam_data %>% data.frame()
-  age <- meta.tab$age %>% unique()
-  if(length(age) > 1){
-    age <- 'All'
-  }
   
   if(test == 'group') {
     group <- phy.in@sam_data$group
@@ -956,15 +993,33 @@ permdisp <- function(phy.in, test = 'Group', method = 'bray', type = 'median', n
   else if(test == 'age') {
     group <- phy.in@sam_data$age
   }
+  
+  perm <- how(nperm = n.perm)
+  if(block == 'tree'){
+    setBlocks(perm) <- with(meta.tab, tree) 
+  }
+  
+  else if(block == 'group'){
+    setBlocks(perm) <- with(meta.tab, group) 
+  }
+  
+  else if(block == 'age'){
+    setBlocks(perm) <- with(meta.tab, age) 
+  }
+  
   bd <- betadisper(d = d, group = group, type = type, bias.adjust = bias)
-  df <- permutest(bd, pairwise = pair, permutations = n.perm)$tab %>% data.frame() %>% dplyr::select(Df, `F`, P = Pr..F.)
+  df <- permutest(bd, pairwise = pair, permutations = perm)$tab %>% data.frame() %>% dplyr::select(Df, `F`, P = Pr..F.)
   
   df %<>% rownames_to_column(var = 'Term')
+  df$Term %<>% str_replace('Residuals', 'Residual')
   df$Term %<>% str_replace('Groups', test)
   df$`F` %<>% round(digits = 3)
   df$P %<>% round(digits = 3)
-  df$Age <- age
-  df %>% dplyr::select(Age, everything())
+  
+  total.df <- data.frame(Term = 'Total', Df = sum(df$Df))
+  df %<>% bind_rows(total.df)
+  
+  df
 }
 permanova <- function(in.phy, method = 'bray', n.perm = 999, by = 'terms', form, block = 'none') {
   # This function accepts phyloseq objects as input, performs PERMANOVA,
@@ -1018,41 +1073,48 @@ permanova <- function(in.phy, method = 'bray', n.perm = 999, by = 'terms', form,
 time.mantel <- function(age.1, age.2, group, spatial = F, dist = 'bray', method = 'spearman', n.perm = 999){
   # This function accepts phyloseq objects (representing different age classes and containing the same number of samples)
   # as input, performs a Mantel test, and returns a dataframe for visualization.
-  # An exposure group option must be chosen, but relevant options can be passed to phyloseq::distance,
-  # vegan::mantel, and vegan::mantel.partial if option "spatial" is set to T. 
+  # An exposure group option must be chosen, but relevant options can be passed to phyloseq::distance and vegan::mantel.
+  # The arranging steps are crucial for ensuring that the matrices line up properly and that strata is properly set!
+  # "tree" is hardcoded as a permutation stratum, so change the function if this isn't desired.
   
   require(phyloseq)
   
-  sam.data.1 <- age.1@sam_data %>% data.frame()
-  sam.data.2 <- age.2@sam_data %>% data.frame()
+  sam.data.1 <- age.1 %>% sample_data() %>% data.frame() %>% arrange(tree.ht)
+  sam.data.2 <- age.2 %>% sample_data() %>% data.frame() %>% arrange(tree.ht)
+  # xyz <- sam.data.1 %>% select(x, y, z)
+  
+  sample_data(age.1) <- sam.data.1 %>% sample_data()
+  sample_data(age.2) <- sam.data.2 %>% sample_data()
+  
+  otu_table(age.1) <- otu_table(age.1) %>% data.frame() %>% .[order(row.names(sam.data.1)), ] %>% otu_table(taxa_are_rows = F)
+  otu_table(age.2) <- otu_table(age.2) %>% data.frame() %>% .[order(row.names(sam.data.2)), ] %>% otu_table(taxa_are_rows = F)
+  
   young <- sam.data.1$age %>% unique()
   old <- sam.data.2$age %>% unique()
   ages <- paste0(young, ' to ', old)
-  
+  trees <- sam.data.1[sam.data.1$group == group, ]$tree
+
   samps.1 <- sam.data.1[sam.data.1$group == group, ] %>% rownames()
   samps.2 <- sam.data.2[sam.data.2$group == group, ] %>% rownames()
-  
+
   d1 <- distance(age.1, method = dist) %>% as.matrix()
   d2 <- distance(age.2, method = dist) %>% as.matrix()
-  
-  d1 <- d1[rownames(d1) %in% samps.1, colnames(d1) %in% samps.1] %>% as.dist()
-  d2 <- d2[rownames(d2) %in% samps.2, colnames(d2) %in% samps.2] %>% as.dist()
-  
-  if(spatial == F){
-    set.seed(666)
-    results <- mantel(d1, d2, method = method, permutations = n.perm)
-  }
+  # d3 <- dist(xyz) %>% as.matrix()
 
-  else if(spatial == T){
+  d1 <- d1[rownames(d1) %in% samps.1,
+           colnames(d1) %in% samps.1]
+  # d1 <- d1[rownames(d1) %in% samps.1, ]
+  # d1 <- d1[, colnames(d1) %in% samps.1]
+  d2 <- d2[rownames(d2) %in% samps.2,
+           colnames(d2) %in% samps.2]
+  # d2 <- d2[rownames(d2) %in% samps.2, ]
+  # d2 <- d2[, colnames(d2) %in% samps.2]
+  # d3 <- d3[rownames(d3) %in% samps.1, colnames(d3) %in% samps.1]
 
-    space <- sam.data.1 %>% dplyr::select(x, y, z)
-    d3 <- dist(space) %>% as.matrix()
-    d3 <- d3[rownames(d3) %in% samps.1, colnames(d3) %in% samps.1] %>% as.dist()
+  set.seed(666)
+  results <- mantel(d1, d2, method = method, permutations = n.perm, strata = trees)
+  # results <- mantel.partial(d1, d2, d3, method = method, permutations = n.perm, strata = trees)
 
-    set.seed(666)
-    results <- mantel.partial(d1, d2, d3, method = method, permutations = n.perm)
-  }
-  
   data.frame(Group = group, Transition = ages, p = results$signif, r = results$statistic)
   
 }
@@ -1064,13 +1126,18 @@ sample.tree.hts <- function(sam.data.1, sam.data.2, otu.tab.1, otu.tab.2, group,
   # The correlation between these matrices (each associated with an age class) is
   # calculated according the method supplied by the user and output to "boot.it.mantel".
   
-  require(phyloseq)
-  
-  samps.1 <- sam.data.1[sam.data.1$group == group, ] %>% rownames()
-  samps.2 <- sam.data.2[sam.data.2$group == group, ] %>% rownames()
+  # require(phyloseq)
   
   resamp <- sample(sam.data.1$tree.ht, replace = T)
+  # resamp <- sample(sam.data.1[sam.data.1$group == group, ]$tree.ht, replace = T)
   resamp.2 <- resamp.1 <- data.frame(tree.ht = resamp)
+  
+  samps.1 <- sam.data.1 %>% filter(tree.ht %in% unique(resamp)) %>% .[.$group == group, ] %>% .$sample %>% sample(replace = T)
+  samps.1.tree.ht <- sam.data.1 %>% filter(sample %in% samps.1) %>% .$tree.ht %>% unique()
+
+  samps.2 <- sam.data.2 %>% filter(tree.ht %in% samps.1.tree.ht) %>% .[.$group == group, ] %>% .$sample
+  samps.1 %<>% unique()
+  samps.2 %<>% unique()
   
   resamp.1 %<>% left_join(otu.tab.1, by = 'tree.ht')
   resamp.1$tree.ht <- NULL
@@ -1087,8 +1154,14 @@ sample.tree.hts <- function(sam.data.1, sam.data.2, otu.tab.1, otu.tab.2, group,
   
   d1 <- d1[str_remove(rownames(d1), '.[[:digit:]]+$') %in% samps.1,
            str_remove(colnames(d1), '.[[:digit:]]+$') %in% samps.1] %>% as.dist()
+  # d1 <- d1[str_remove(rownames(d1), '.[[:digit:]]+$') %in% samps.1, ] %>% as.dist()
+  # d1 <- d1[, str_remove(colnames(d1), '.[[:digit:]]+$') %in% samps.1] %>% as.dist()
+  
+  
   d2 <- d2[str_remove(rownames(d2), '.[[:digit:]]+$') %in% samps.2,
            str_remove(colnames(d2), '.[[:digit:]]+$') %in% samps.2] %>% as.dist()
+  # d2 <- d2[str_remove(rownames(d2), '.[[:digit:]]+$') %in% samps.2, ] %>% as.dist()
+  # d2 <- d2[ ,str_remove(colnames(d2), '.[[:digit:]]+$') %in% samps.2] %>% as.dist()
   
   cor(x = d1, y = d2, method = method)
 }
@@ -1105,13 +1178,14 @@ boot.it.mantel <- function(age.1, age.2, group, dist = 'bray', method = 'spearma
   # across different transitions and exposure groups in a nonparametric fashion.
   
   require(parallel)
- 
-  sam.data.1 <- age.1@sam_data %>% data.frame()
-  sam.data.2 <- age.2@sam_data %>% data.frame()
   
-  otu.tab.1 <- age.1@otu_table %>% data.frame() %>% rownames_to_column(var = 'sample')
+  sam.data.1 <- age.1 %>% sample_data() %>% data.frame() %>% rownames_to_column(var = 'sample') %>% arrange(sample)
+  sam.data.2 <- age.2 %>% sample_data() %>% data.frame() %>% rownames_to_column(var = 'sample') %>% arrange(sample)
+  
+  otu.tab.1 <- age.1 %>% otu_table() %>% data.frame() %>% rownames_to_column(var = 'sample') %>% arrange(sample)
   otu.tab.1$tree.ht <- sam.data.1$tree.ht
-  otu.tab.2 <- age.2@otu_table %>% data.frame() %>% rownames_to_column(var = 'sample')
+  
+  otu.tab.2 <- age.2 %>% otu_table() %>% data.frame() %>% rownames_to_column(var = 'sample') %>% arrange(sample)
   otu.tab.2$tree.ht <- sam.data.2$tree.ht
   
   young <- sam.data.1$age %>% unique()

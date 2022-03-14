@@ -23,7 +23,8 @@ tree.tab <- study.crowns %>% dplyr::select(tree, x, y) %>% unique()
 rand.crowns <- readRDS(here('data', 'compile', 'trad.random.crown.rds'))
 
 # Read in crown variable schematic
-crown.vars <- png::readPNG(here('data', 'media', 'crown.vars.png'), native = T)
+# crown.vars <- png::readPNG(here('data', 'media', 'crown.vars.png'), native = T)
+crown.vars <- png::readPNG(here('data', 'media', '2022-02-24_crown.vars.png'), native = T)
 
 # Set out.path
 figure.out <- here('output', 'figures')
@@ -34,6 +35,7 @@ study.crowns %<>% dplyr::select(-x, -y, -z)
 min.zmed <- study.crowns$zmed %>% min()
 rand.crowns %<>% dplyr::select(-exp.top, -top.diff) %>%
   dplyr::filter(zmed >= min.zmed)
+all.crowns <- bind_rows(study.crowns, rand.crowns)
 
 tree.plot <- ggplot(mapping = aes(x = height, y = closure)) +
   geom_line(data = rand.crowns, aes(group = tree), color = 'gray80', alpha = 0.5, show.legend = F) +

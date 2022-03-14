@@ -120,8 +120,8 @@ lw.plots <- (mean.plot | sd.plot) / (diff.plot | cont.plot) +
   plot_annotation(tag_levels = list(c('A', 'B', 'C', 'D'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 lw.plots
-ggsave(here(figure.out, 'fig.s2.tiff'), units = 'mm', height = 140, width = 190,
-       dpi = 300, compression = 'lzw')
+# ggsave(here(figure.out, 'fig.s2.tiff'), units = 'mm', height = 140, width = 190,
+#        dpi = 300, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')

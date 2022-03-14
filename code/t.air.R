@@ -124,8 +124,8 @@ t.air.plots <- (mean.plot | sd.plot) / (diff.plot | cont.plot) +
   plot_annotation(tag_levels = list(c('A', 'B', 'C', 'D'))) &
   theme(plot.tag = element_text(size = 10, face = 'bold'))
 t.air.plots
-ggsave(here(figure.out, 'fig.s1.tiff'), units = 'mm', width = 190, height = 140,
-       dpi = 300, compression = 'lzw')
+# ggsave(here(figure.out, 'fig.s1.tiff'), units = 'mm', width = 190, height = 140,
+#        dpi = 300, compression = 'lzw')
 
 # Get session info ####
 session.path <- here('output', 'sessions')
