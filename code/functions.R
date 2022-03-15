@@ -866,7 +866,7 @@ dbrda.it <- function(log.in, rel.in = NULL, form, dist = 'bray', vectors = F, mi
   # meta.tab <- log.in@sam_data %>% data.frame() %>% dplyr::select(sampleID, tree, age, height, depth, closure, residuals, group)
   # meta.tab <- log.in@sam_data %>% data.frame() %>% dplyr::select(sampleID, tree, age, height, depth, closure, group)
   meta.tab <- log.in@sam_data %>% data.frame() %>% dplyr::select(sampleID, tree, age, height, closure, group)
-  meta.tab %<>% cbind(otu.tab)
+  # meta.tab %<>% cbind(otu.tab)
   form %<>% as.formula()
   
   obj <- dbrda(formula = form, distance = dist, data = meta.tab)
@@ -907,13 +907,12 @@ dbrda.it <- function(log.in, rel.in = NULL, form, dist = 'bray', vectors = F, mi
     term.test <- anova(obj, by = 'margin', strata = meta.tab$tree) %>% data.frame()
     vect$p <- term.test[1:2, 4]
     # vect$p <- term.test[1, 4]
-    # vect$r <- prop$dbRDA1[2]
-    vect$r <- 0.1
-    # vect$sig <- ifelse(vect$p < max.p, '*', '')
+    vect$r <- 0.1 # Numeric placeholder
     vect %<>% dplyr::select(-MDS4, -MDS1, -MDS2, -MDS3)
     # vect %<>% dplyr::select(-MDS4, -MDS5, -MDS2, -MDS3)
     
-    vect.otu.tab <- rel.in@otu_table %>% data.frame()
+    vect.otu.tab <- rel.in@otu_table %>% data.frame() %>% rownames_to_column(var = 'sampleID') %>% left_join(meta.tab, by = 'sampleID')
+    # vect.otu.tab %<>% dplyr::select(height, closure, otu.1, otu.2, otu.3, otu.6)
     vect.otu.tab %<>% dplyr::select(otu.1, otu.2, otu.3, otu.6)
     
     set.seed(666)
@@ -936,23 +935,24 @@ dbrda.it <- function(log.in, rel.in = NULL, form, dist = 'bray', vectors = F, mi
     # fit.scores$r <- NULL
     
     vect %<>% rbind(fit.scores)
+    # vect <- fit.scores
     sig <- vect %>% filter(p < max.p, r > min.r)
     
     plot <- ggplot(data = sites, mapping = aes(x = dbRDA1, y = dbRDA2)) +
     # plot <- ggplot(data = sites, mapping = aes(x = dbRDA1, y = MDS1)) +
     geom_segment(data = vect,
                  aes(x = 0,
-                     xend = dbRDA1 * 1.5,
+                     xend = dbRDA1 * 2,
                      y = 0,
-                     yend = dbRDA2 * 1.5,
-                     # yend = MDS1 * 1.5,
+                     yend = dbRDA2 * 2,
+                     # yend = MDS1 * 2,
                      color = var),
                  alpha = 0.7,
                  arrow = arrow(length = unit(2, 'mm')),
                  size = 0.75) +
-    geom_point(aes(x = dbRDA1 * 1.6,
-                   y = dbRDA2 * 1.6
-                   # y = MDS1 * 1.6
+    geom_point(aes(x = dbRDA1 * 2.2,
+                   y = dbRDA2 * 2.2
+                   # y = MDS1 * 2.2
                    ),
                sig,
                shape = 8,
@@ -1083,11 +1083,14 @@ time.mantel <- function(age.1, age.2, group, spatial = F, dist = 'bray', method 
   sam.data.2 <- age.2 %>% sample_data() %>% data.frame() %>% arrange(tree.ht)
   # xyz <- sam.data.1 %>% select(x, y, z)
   
-  sample_data(age.1) <- sam.data.1 %>% sample_data()
-  sample_data(age.2) <- sam.data.2 %>% sample_data()
+  # sample_data(age.1) <- sam.data.1 %>% sample_data()
+  # sample_data(age.2) <- sam.data.2 %>% sample_data()
   
-  otu_table(age.1) <- otu_table(age.1) %>% data.frame() %>% .[order(row.names(sam.data.1)), ] %>% otu_table(taxa_are_rows = F)
-  otu_table(age.2) <- otu_table(age.2) %>% data.frame() %>% .[order(row.names(sam.data.2)), ] %>% otu_table(taxa_are_rows = F)
+  # otu_table(age.1) <- otu_table(age.1) %>% data.frame() %>% .[order(row.names(sam.data.1)), ] %>% otu_table(taxa_are_rows = F)
+  # otu_table(age.2) <- otu_table(age.2) %>% data.frame() %>% .[order(row.names(sam.data.2)), ] %>% otu_table(taxa_are_rows = F)
+  
+  otu.tab.1 <- otu_table(age.1) %>% data.frame() %>% .[match(rownames(sam.data.1), rownames(.)), ]
+  otu.tab.2 <- otu_table(age.2) %>% data.frame() %>% .[match(rownames(sam.data.2), rownames(.)), ]
   
   young <- sam.data.1$age %>% unique()
   old <- sam.data.2$age %>% unique()
@@ -1097,8 +1100,12 @@ time.mantel <- function(age.1, age.2, group, spatial = F, dist = 'bray', method 
   samps.1 <- sam.data.1[sam.data.1$group == group, ] %>% rownames()
   samps.2 <- sam.data.2[sam.data.2$group == group, ] %>% rownames()
 
-  d1 <- distance(age.1, method = dist) %>% as.matrix()
-  d2 <- distance(age.2, method = dist) %>% as.matrix()
+  # d1 <- distance(age.1, method = dist) %>% as.matrix()
+  # d2 <- distance(age.2, method = dist) %>% as.matrix()
+  
+  d1 <- vegan::vegdist(otu.tab.1, method = dist) %>% as.matrix()
+  d2 <- vegan::vegdist(otu.tab.2, method = dist) %>% as.matrix()
+  
   # d3 <- dist(xyz) %>% as.matrix()
 
   d1 <- d1[rownames(d1) %in% samps.1,
@@ -1126,17 +1133,15 @@ sample.tree.hts <- function(sam.data.1, sam.data.2, otu.tab.1, otu.tab.2, group,
   # The correlation between these matrices (each associated with an age class) is
   # calculated according the method supplied by the user and output to "boot.it.mantel".
   
-  # require(phyloseq)
-  
   resamp <- sample(sam.data.1$tree.ht, replace = T)
   # resamp <- sample(sam.data.1[sam.data.1$group == group, ]$tree.ht, replace = T)
   resamp.2 <- resamp.1 <- data.frame(tree.ht = resamp)
   
   samps.1 <- sam.data.1 %>% filter(tree.ht %in% unique(resamp)) %>% .[.$group == group, ] %>% .$sample %>% sample(replace = T)
-  samps.1.tree.ht <- sam.data.1 %>% filter(sample %in% samps.1) %>% .$tree.ht %>% unique()
-
-  samps.2 <- sam.data.2 %>% filter(tree.ht %in% samps.1.tree.ht) %>% .[.$group == group, ] %>% .$sample
   samps.1 %<>% unique()
+  samps.1.tree.ht <- sam.data.1 %>% filter(sample %in% samps.1) %>% .$tree.ht %>% unique()
+  
+  samps.2 <- sam.data.2 %>% filter(tree.ht %in% samps.1.tree.ht) %>% .[.$group == group, ] %>% .$sample
   samps.2 %<>% unique()
   
   resamp.1 %<>% left_join(otu.tab.1, by = 'tree.ht')
@@ -1179,19 +1184,22 @@ boot.it.mantel <- function(age.1, age.2, group, dist = 'bray', method = 'spearma
   
   require(parallel)
   
-  sam.data.1 <- age.1 %>% sample_data() %>% data.frame() %>% rownames_to_column(var = 'sample') %>% arrange(sample)
-  sam.data.2 <- age.2 %>% sample_data() %>% data.frame() %>% rownames_to_column(var = 'sample') %>% arrange(sample)
+  sam.data.1 <- age.1 %>% sample_data() %>% data.frame() %>% arrange(tree.ht)
+  sam.data.2 <- age.2 %>% sample_data() %>% data.frame() %>% arrange(tree.ht)
   
-  otu.tab.1 <- age.1 %>% otu_table() %>% data.frame() %>% rownames_to_column(var = 'sample') %>% arrange(sample)
+  otu.tab.1 <- age.1 %>% otu_table() %>% data.frame() %>% .[match(rownames(sam.data.1), rownames(.)), ] %>% rownames_to_column(var = 'sample')
   otu.tab.1$tree.ht <- sam.data.1$tree.ht
   
-  otu.tab.2 <- age.2 %>% otu_table() %>% data.frame() %>% rownames_to_column(var = 'sample') %>% arrange(sample)
+  otu.tab.2 <- age.2 %>% otu_table() %>% data.frame() %>% .[match(rownames(sam.data.2), rownames(.)), ] %>% rownames_to_column(var = 'sample')
   otu.tab.2$tree.ht <- sam.data.2$tree.ht
+  
+  sam.data.1 %<>% rownames_to_column(var = 'sample')
+  sam.data.2 %<>% rownames_to_column(var = 'sample')
   
   young <- sam.data.1$age %>% unique()
   old <- sam.data.2$age %>% unique()
   ages <- paste0(young, ' to ', old)
-  
+
   clust <- makeCluster(cores, setup_strategy = 'sequential')
   clusterEvalQ(clust, library(MASS))
   clusterEvalQ(clust, library(tidyverse))
@@ -1205,12 +1213,14 @@ boot.it.mantel <- function(age.1, age.2, group, dist = 'bray', method = 'spearma
                                                        otu.tab.1, otu.tab.2,
                                                        group, dist, method)})
   stopCluster(clust)
-  
+
   data.frame(Transition = ages,
              Group = group,
              mean = mean(boots),
              lci = coxed::bca(boots)[1],
              uci = coxed::bca(boots)[2])
+  
+  # list(sam.data.1 = sam.data.1, otu.tab.1 = otu.tab.1, sam.data.2 = sam.data.2, otu.tab.2 = otu.tab.2)
 }
 
 # Taxon responses

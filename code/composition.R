@@ -25,7 +25,7 @@
 # Creates Table S3, which: ####
 # identifies indicator taxa for open and closed exposure groups
 
-# Creates Fig. S4, which: #####
+# Creates Fig. S2, which: #####
 # shows unconstrained NMDS ordinations for all retained samples, with points colored by
 # (A) tree of origin and
 # (B) needle age class.
@@ -241,7 +241,7 @@ ggsave(here(figure.out, 'fig.3.tiff'), ages.db, units = 'mm', width = 190, heigh
        dpi = 300, compression = 'lzw')
 
 # Relative abundance dbRDA, constrained on closure, for the third age class
-a3.db <- dbrda.it(relative$a3, relative$a3, form = 'otu.tab ~ closure',
+a3.db <- dbrda.it(relative$a3, relative$a3, form = 'otu.tab ~ height + closure',
                   vectors = T, min.r = 0, max.p = 0.05) +
   geom_point(aes(fill = tree, shape = group),
              size = 2,
@@ -253,6 +253,7 @@ a3.db <- dbrda.it(relative$a3, relative$a3, form = 'otu.tab ~ closure',
   ) +
   scale_fill_colorblind() +
   scale_color_manual(values = db.cols, labels = c('Closure',
+                                                  'Height',
                                                   expression(paste('OTU.1 - ', italic('N. gaeumannii')
                                                   )
                                                   ),
@@ -342,6 +343,17 @@ ng.ra <- relative$all@otu_table %>% data.frame() %>% .$otu.1
 ng.sam.data <- relative$all@sam_data %>% data.frame()
 ng.sam.data$ng.ra <- ng.ra
 
+ng.ra.a1 <- ng.sam.data %>% filter(age == 'A1') %>% arrange(tree.ht)
+ng.ra.a2 <- ng.sam.data %>% filter(age == 'A2') %>% arrange(tree.ht)
+ng.ra.a3 <- ng.sam.data %>% filter(age == 'A3') %>% arrange(tree.ht)
+ng.ra.a4 <- ng.sam.data %>% filter(age == 'A4') %>% arrange(tree.ht)
+
+wilcox.test(ng.ra.a1$ng.ra, ng.ra.a2$ng.ra, paired = T)
+wilcox.test(ng.ra.a2$ng.ra, ng.ra.a3$ng.ra, paired = T)
+wilcox.test(ng.ra.a3$ng.ra, ng.ra.a4$ng.ra, paired = T)
+
+wilcox.test(ng.ra.a3[ng.ra.a3$group == 'Open', ]$ng.ra, ng.ra.a3[ng.ra.a3$group == 'Closed', ]$ng.ra, exact = F)
+
 set.seed(666)
 ng.ra.plot <- ggplot(ng.sam.data, aes(x = group, y = ng.ra, fill = tree)
                      ) +
@@ -375,8 +387,21 @@ otu.2.ra <- otu.ra$otu.2
 otu.3.ra <- otu.ra$otu.3
 otu.6.ra <- otu.ra$otu.6
 rp.ra <- otu.2.ra + otu.3.ra + otu.6.ra
+# rp.ra <- otu.2.ra + otu.3.ra
 rp.sam.data <- relative$all@sam_data %>% data.frame()
 rp.sam.data$rp.ra <- rp.ra
+
+rp.ra.a1 <- rp.sam.data %>% filter(age == 'A1') %>% arrange(tree.ht)
+rp.ra.a2 <- rp.sam.data %>% filter(age == 'A2') %>% arrange(tree.ht)
+rp.ra.a3 <- rp.sam.data %>% filter(age == 'A3') %>% arrange(tree.ht)
+rp.ra.a4 <- rp.sam.data %>% filter(age == 'A4') %>% arrange(tree.ht)
+
+wilcox.test(rp.ra.a1$rp.ra, rp.ra.a2$rp.ra, paired = T)
+wilcox.test(rp.ra.a2$rp.ra, rp.ra.a3$rp.ra, paired = T)
+wilcox.test(rp.ra.a3$rp.ra, rp.ra.a4$rp.ra, paired = T)
+
+wilcox.test(rp.ra.a2[rp.ra.a2$group == 'Open', ]$rp.ra, rp.ra.a2[rp.ra.a2$group == 'Closed', ]$rp.ra, exact = T)
+wilcox.test(rp.ra.a3[rp.ra.a3$group == 'Open', ]$rp.ra, rp.ra.a3[rp.ra.a3$group == 'Closed', ]$rp.ra, exact = T)
 
 set.seed(666)
 rp.ra.plot <- ggplot(rp.sam.data, aes(x = group, y = rp.ra, fill = tree)

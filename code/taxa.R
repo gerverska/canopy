@@ -1,10 +1,10 @@
-# Create Fig. S3 from the manuscript, which shows:
-# an OTU accumulation curve for each tree
-
 # Create Figure 2 from the manuscript, which shows:
 # (A) a stacked bar plot, with each tree getting its own bar,
 # (B) the OTU abundance distribution of OTUs across all eight trees, and
 # (C) the occupancy-abundance relationship for each OTU across all trees.
+
+# Create Fig. S1 from the manuscript, which shows:
+# an OTU accumulation curve for each tree
 
 library(scales)
 library(cowplot)

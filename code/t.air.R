@@ -1,9 +1,3 @@
-# Create Fig. S1 from the manuscript, which shows:
-# (A) mean air temperature vs height,
-# (B) seasonality of air temperature vs height,
-# (C) mean daily air temperature range vs height
-# (D) air temperature continentality vs height
-
 library(patchwork)
 library(ggthemes)
 library(cowplot)

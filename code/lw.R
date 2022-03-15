@@ -1,9 +1,3 @@
-# Create Fig. S2 from the manuscript, which shows:
-# (A) mean leaf wetness vs height,
-# (B) seasonality of leaf wetness vs height,
-# (C) mean daily leaf wetness range vs height
-# (D) leaf wetness continentality vs height
-
 library(patchwork)
 library(ggthemes)
 library(cowplot)
