@@ -645,8 +645,8 @@ all.nmds <- all.tree / all.age + plot_annotation(tag_levels = list(c('A', 'B')
   theme(plot.tag = element_text(size = 10, face = 'bold')
         )
 all.nmds
-ggsave(here(figure.out, 'fig.s2.tiff'), all.nmds, units = 'mm', width = 140, height = 140,
-       dpi = 300, compression = 'lzw')
+ggsave(here(figure.out, 'fig.s2.png'), all.nmds, units = 'mm', width = 140, height = 140,
+       dpi = 300)
 
 # Get session info ####
 session.path <- here('output', 'sessions')

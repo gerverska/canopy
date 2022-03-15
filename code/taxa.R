@@ -195,8 +195,8 @@ ggplot(otu.accum, aes(x = Sites, y = Richness, ymax = UPR, ymin = LWR, color = G
         legend.text = element_markdown(size = 7),
         plot.background = element_rect(fill = 'white', color = 'white')
         )
-ggsave(here(figure.out, 'fig.s1.tiff'), units = 'mm', width = 140,
-       dpi = 300, compression = 'lzw')
+ggsave(here(figure.out, 'fig.s1.png'), units = 'mm', width = 140,
+       dpi = 300)
 
 # Get session info ####
 session.path <- here('output', 'sessions')

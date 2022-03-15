@@ -8,7 +8,7 @@
 # (C) how the Shannon diversity index differs among exposure groups, and
 # (D) how the Shannon diversity index differs among trees.
 
-# Creates Fig. S5, which: ####
+# Creates Fig. S3, which: ####
 # models the relationship between the estimated Shannon index and closure
 
 # Load packages ####
@@ -515,8 +515,8 @@ closure.shannon.lme <- ggplot(shannon, aes(x = closure, y = estimate)
         plot.background = element_rect(fill = 'white', color = 'white')
         )
 
-ggsave(here(figure.out, 'fig.s3.tiff'), units = 'mm', width = 140,
-       dpi = 300, compression = 'lzw')
+ggsave(here(figure.out, 'fig.s3.png'), units = 'mm', width = 140,
+       dpi = 300)
 
 # Get session info ####
 session.path <- here('output', 'sessions')
